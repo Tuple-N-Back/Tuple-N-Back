@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import org.squidfish.tuple_n_back.NQueue
 
-abstract class GameViewModel<T>(val n: Int, val rounds: Int) : ViewModel() {
+abstract class GameViewModel<T>(val n: Int) : ViewModel() {
     abstract val TAG: String
 
     var queue by mutableStateOf(NQueue<T>(n))
