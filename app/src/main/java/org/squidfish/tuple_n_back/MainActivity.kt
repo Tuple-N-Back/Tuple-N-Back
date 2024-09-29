@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import org.squidfish.tuple_n_back.models.GameModel
 import org.squidfish.tuple_n_back.models.GridViewModel
 import org.squidfish.tuple_n_back.models.SoundViewModel
 import org.squidfish.tuple_n_back.ui.theme.TupleNbackTheme
@@ -20,9 +21,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val gameModel = GameModel(4,4,500)
+
         setContent {
             TupleNbackTheme {
-                GameApp(GridViewModel(1), SoundViewModel(1, 9),1f)
+                GameApp(gameModel, GridViewModel(gameModel), SoundViewModel(gameModel))
             }
         }
     }

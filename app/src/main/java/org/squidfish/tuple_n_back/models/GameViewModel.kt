@@ -1,34 +1,37 @@
 package org.squidfish.tuple_n_back.models
 
+import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import org.squidfish.tuple_n_back.NQueue
 
-abstract class GameViewModel<T>(val n: Int) : ViewModel() {
-    abstract val TAG: String
+abstract class GameViewModel(gameModel: GameModel) : ViewModel() {
+    abstract val gameButtonText: String
 
-    var queue by mutableStateOf(NQueue<T>(n))
+    private val queue by mutableStateOf(NQueue<Int>(gameModel.recallsBack))
     var isRepeat by mutableStateOf(false)
-    var currentRound by mutableIntStateOf(0)
 
-    protected abstract fun genNewState(): T;
+    var forceRecomposition by mutableStateOf(false)
+
+    protected abstract fun genNewState(): Int
+    open fun invokeChange(context: Context) {
+        forceRecomposition = true
+    }
 
     fun createNewState() {
         val state = genNewState()
 
-        // can't have repeats, when we haven't reached turn n
+        // can't have repeats when we haven't reached turn n
         if (queue.isFull()) {
             isRepeat = (state == queue.dequeue())
         }
 
         queue.enqueue(state)
-        currentRound++
     }
 
-    open fun getRecent() : T? {
+    open fun getRecent() : Int? {
         return queue.getFirst()
     }
 }

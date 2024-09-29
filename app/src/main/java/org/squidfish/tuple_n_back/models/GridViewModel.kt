@@ -1,6 +1,10 @@
 package org.squidfish.tuple_n_back.models
 
+import android.content.Context
+import org.squidfish.tuple_n_back.games.GridGame
+
 enum class GridPosition {
+    NONE,
     UP_LEFT,
     UP,
     UP_RIGHT,
@@ -10,18 +14,16 @@ enum class GridPosition {
     DOWN_LEFT,
     DOWN,
     DOWN_RIGHT,
-    NONE
 }
 
-class GridViewModel(n: Int) : GameViewModel<GridPosition>(n) {
-    override val TAG = "GridViewModel"
+class GridViewModel(gameModel: GameModel) : GameViewModel(gameModel) {
+    override val gameButtonText = "Grid"
 
-    override fun genNewState(): GridPosition {
-        return GridPosition.entries.filter { it != GridPosition.NONE }.random()
+    override fun genNewState(): Int {
+        return (GridPosition.entries.filter { it != GridPosition.NONE }.random()).ordinal
     }
 
-    override fun getRecent(): GridPosition {
-        return super.getRecent() ?: return GridPosition.NONE
+    override fun getRecent(): Int {
+        return super.getRecent() ?: return GridPosition.NONE.ordinal
     }
-
 }
