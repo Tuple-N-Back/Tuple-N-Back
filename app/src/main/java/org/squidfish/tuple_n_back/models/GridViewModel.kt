@@ -9,14 +9,19 @@ enum class GridPosition {
     RIGHT,
     DOWN_LEFT,
     DOWN,
-    DOWN_RIGHT
+    DOWN_RIGHT,
+    NONE
 }
 
 class GridViewModel(n: Int) : GameViewModel<GridPosition>(n) {
     override val TAG = "GridViewModel"
 
     override fun genNewState(): GridPosition {
-        return GridPosition.entries.random()
+        return GridPosition.entries.filter { it != GridPosition.NONE }.random()
+    }
+
+    override fun getRecent(): GridPosition {
+        return super.getRecent() ?: return GridPosition.NONE
     }
 
 }

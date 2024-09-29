@@ -24,6 +24,14 @@ class NQueue<T>(private val maxSize: Int) {
     fun isFull(): Boolean {
         return (queue.size == maxSize)
     }
+
+    fun getFirst(): T? {
+        if (queue.size == 0) {
+            return null
+        }
+
+        return queue.first
+    }
 }
 
 class QueueFullException(message: String): Exception(message)
