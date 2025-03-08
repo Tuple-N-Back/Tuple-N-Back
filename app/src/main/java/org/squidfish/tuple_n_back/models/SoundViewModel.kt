@@ -5,7 +5,7 @@ import android.content.Context
 import android.media.MediaPlayer
 
 
-class SoundViewModel(gameModel: GameModel) : GameViewModel(gameModel) {
+class SoundViewModel(recallsBack: Int) : GameViewModel(recallsBack) {
     override val gameButtonText = "Sound"
 
     var mp: MediaPlayer? = null
@@ -24,7 +24,8 @@ class SoundViewModel(gameModel: GameModel) : GameViewModel(gameModel) {
     }
 
     @SuppressLint("DiscouragedApi")
-    override fun invokeChange(context: Context) {
+    override fun invokeChange(context: Context?) {
+        context ?: return
         val recent = getRecent() ?: return
 
         val packageName = context.packageName

@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.squidfish.tuple_n_back.models.GameModel
+import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GridPosition
 import org.squidfish.tuple_n_back.models.GridViewModel
 
@@ -84,5 +85,5 @@ fun GridSquare(position: GridPosition, highlightedPosition: Int) {
 @Preview
 @Composable
 fun GridGamePreview() {
-    GridGame(GridViewModel(GameModel(3,25,1000,)))
+    GridGame(GridViewModel(4))
 }

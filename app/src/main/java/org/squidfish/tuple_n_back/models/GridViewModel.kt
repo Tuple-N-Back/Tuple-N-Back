@@ -1,8 +1,5 @@
 package org.squidfish.tuple_n_back.models
 
-import android.content.Context
-import org.squidfish.tuple_n_back.games.GridGame
-
 enum class GridPosition {
     NONE,
     UP_LEFT,
@@ -16,7 +13,7 @@ enum class GridPosition {
     DOWN_RIGHT,
 }
 
-class GridViewModel(gameModel: GameModel) : GameViewModel(gameModel) {
+class GridViewModel(recallsBack: Int) : GameViewModel(recallsBack) {
     override val gameButtonText = "Grid"
 
     override fun genNewState(): Int {
