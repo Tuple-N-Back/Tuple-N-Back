@@ -21,20 +21,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuple_n_back.models.GameModel
-import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GridPosition
-import org.squidfish.tuple_n_back.models.GridViewModel
+import org.squidfish.tuple_n_back.models.GridEngine
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun GridGame(gridViewModel: GridViewModel) {
-    var manualRecompose by mutableStateOf(false)
+fun GridGame(highlightedPosition: Int) {
+    //var manualRecompose by mutableStateOf(false)
 
-    if (gridViewModel.forceRecomposition) {
-        manualRecompose = !manualRecompose
-        gridViewModel.forceRecomposition = false
-    }
+    //if (gridViewModel.forceRecomposition) {
+    //    manualRecompose = !manualRecompose
+    //    gridViewModel.forceRecomposition = false
+    //}
 
     Column (
         modifier = Modifier
@@ -45,23 +43,23 @@ fun GridGame(gridViewModel: GridViewModel) {
         Row (
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            GridSquare(GridPosition.UP_LEFT, gridViewModel.getRecent())
-            GridSquare(GridPosition.UP, gridViewModel.getRecent())
-            GridSquare(GridPosition.UP_RIGHT, gridViewModel.getRecent())
+            GridSquare(GridPosition.UP_LEFT, highlightedPosition)
+            GridSquare(GridPosition.UP, highlightedPosition)
+            GridSquare(GridPosition.UP_RIGHT, highlightedPosition)
         }
         Row (
             horizontalArrangement = Arrangement.SpaceEvenly
         ){
-            GridSquare(GridPosition.LEFT, gridViewModel.getRecent())
-            GridSquare(GridPosition.CENTER, gridViewModel.getRecent())
-            GridSquare(GridPosition.RIGHT, gridViewModel.getRecent())
+            GridSquare(GridPosition.LEFT, highlightedPosition)
+            GridSquare(GridPosition.CENTER, highlightedPosition)
+            GridSquare(GridPosition.RIGHT, highlightedPosition)
         }
         Row (
             horizontalArrangement = Arrangement.SpaceEvenly
         ){
-            GridSquare(GridPosition.DOWN_LEFT, gridViewModel.getRecent())
-            GridSquare(GridPosition.DOWN, gridViewModel.getRecent())
-            GridSquare(GridPosition.DOWN_RIGHT, gridViewModel.getRecent())
+            GridSquare(GridPosition.DOWN_LEFT, highlightedPosition)
+            GridSquare(GridPosition.DOWN, highlightedPosition)
+            GridSquare(GridPosition.DOWN_RIGHT, highlightedPosition)
         }
     }
 }
@@ -85,5 +83,5 @@ fun GridSquare(position: GridPosition, highlightedPosition: Int) {
 @Preview
 @Composable
 fun GridGamePreview() {
-    GridGame(GridViewModel(4))
+    GridGame(GridPosition.UP.ordinal)
 }

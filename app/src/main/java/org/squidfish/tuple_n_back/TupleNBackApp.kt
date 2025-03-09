@@ -13,9 +13,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import org.squidfish.tuple_n_back.models.GameModel
 import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GameType
+import org.squidfish.tuple_n_back.models.GameViewModel
 
 
 enum class ScreenType(@StringRes val title: Int) {
@@ -26,11 +26,11 @@ enum class ScreenType(@StringRes val title: Int) {
 
 @Composable
 fun TupleNBackApp (
-    gameModel: GameModel = GameModel(GameSettings(2,10,500)),
+    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, games=listOf(GameType.Grid, GameType.Sound))),
     navController: NavHostController = rememberNavController()
 ) {
     val TAG = "TupleNBackApp"
-    gameModel.setGames(listOf<GameType>(GameType.Grid, GameType.Sound))
+    //gameModel.setGames(listOf<GameType>(GameType.Grid, GameType.Sound))
 
     Scaffold(
         topBar = { TupleNBackAppBar() }
@@ -40,21 +40,23 @@ fun TupleNBackApp (
             startDestination = ScreenType.Game.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            Log.d(TAG, "in navhost")
             composable(route = ScreenType.Game.name) {
-                Log.d(TAG, "in composable")
+                Log.d(TAG, "Composing GameScreen")
                 GameScreen(
-                    settings = gameModel.getSettings(),
+                    settings = gameModel.gameSettings,
                     onFinnish = {
-                        gameModel.setStats(it)
+                        //gameModel.setStats(it)
                         navController.navigate(ScreenType.Summary.name)
                     },
-                    gameModel.getGames()
+                    viewModel = gameModel,
+                    onMnemGuess = gameModel::handleGuess
                 )
-                Log.d(TAG, "out of composable")
+                Log.d(TAG, "Finished GameScreen composition")
             }
             composable(route = ScreenType.Summary.name) {
-                GameSummaryScreen()
+                Log.d(TAG, "Composing GameSummaryScreen")
+                //GameSummaryScreen()
+                Log.d(TAG, "Finished GameSummaryScreen composition")
             }
         }
 

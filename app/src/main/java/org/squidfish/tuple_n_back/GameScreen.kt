@@ -1,7 +1,5 @@
 package org.squidfish.tuple_n_back
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,85 +14,43 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import org.squidfish.tuple_n_back.games.GridGame
-import org.squidfish.tuple_n_back.models.GameModel
+import org.squidfish.tuple_n_back.games.SoundGame
+import org.squidfish.tuple_n_back.models.RecallCheck
 import org.squidfish.tuple_n_back.models.GameSettings
-import org.squidfish.tuple_n_back.models.GameStats
+import org.squidfish.tuple_n_back.models.GameType
 import org.squidfish.tuple_n_back.models.GameViewModel
-import org.squidfish.tuple_n_back.models.GridViewModel
-import org.squidfish.tuple_n_back.models.SoundViewModel
+import org.squidfish.tuple_n_back.models.GridPosition
 
 
 @Composable
 fun GameScreen(
     settings: GameSettings,
-    onFinnish: (List<GameStats>) -> Unit,
-    games: List<GameViewModel>
+    onFinnish: () -> Unit,
+    viewModel: GameViewModel = GameViewModel(GameSettings(2, 10, 200)),
+    onMnemGuess: (game: GameType) -> Unit
+    //games: List<GameEngine>
 ) {
     val TAG = "GameScreen"
-    var currentTime by remember { mutableIntStateOf(0) }
-    var currentRound by remember { mutableIntStateOf(0) }
-    val buttonClicks = remember { mutableStateListOf<Boolean>() }
+    val state by viewModel.gameState.collectAsState()
 
-    for (i in games.indices) {
-        buttonClicks.add(false)
+    // if game has ended - this is when game stats are updated
+    // TODO: more robust check
+    if (state.gameOver) {
+        GameSummaryScreen(state.gameStats)
+        return
     }
 
-    // val gridButtonClick = remember { mutableStateOf(false) }
-    // val soundButtonClick = remember { mutableStateOf(false) }
-    // var gridBtnClickVal by gridButtonClick
-    // var soundBtnClickVal by soundButtonClick
-
-    val timerUpdateDelayMilli = 50
-
-    val handler = remember {Handler(Looper.getMainLooper())}
-
-    handler.postDelayed({
-        currentTime += timerUpdateDelayMilli
-    }, timerUpdateDelayMilli.toLong())
-
-    if (currentTime >= settings.milliPerRound) {
-        // gridViewModel.createNewState()
-        // gridViewModel.updateStats(gridBtnClickVal)
-        // gridViewModel.invokeChange()
-
-        for (i in games.indices) {
-            games[i].createNewState()
-            games[i].updateStats(buttonClicks[i])
-            games[i].invokeChange(LocalContext.current)
-
-            buttonClicks[i] = false
-        }
-
-        // gridBtnClickVal = false
-        // soundBtnClickVal = false
-
-        currentTime = 0
-        currentRound++
-    }
-
-    if (currentRound >= settings.totalRounds) {
-        handler.removeCallbacksAndMessages(null)
-        onFinnish(games.map{it.toStats()})
-    }
-
-    Log.d(TAG, "Before composable")
     Scaffold() { innerPadding ->
         Column (
             verticalArrangement = Arrangement.SpaceBetween,
@@ -108,7 +64,7 @@ fun GameScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TimerBar(settings.milliPerRound.toFloat(), currentTime.toFloat())
+                TimerBar(state.roundProgress)
 
                 Row (
                     verticalAlignment = Alignment.Top,
@@ -117,18 +73,17 @@ fun GameScreen(
                         .padding(top = 32.dp)
                 ) {
                     Text(
-                        text = currentRound.toString() + "/" + settings.totalRounds.toString(),
+                        text = state.currentRound.toString() + "/" + settings.totalRounds.toString(),
                         fontSize = TextUnit(10f, TextUnitType.Em)
                     )
                 }
 
             }
 
-            Log.d(TAG, "Before Grid Game")
-            if (games[0] is GridViewModel) {
-                GridGame(games[0] as GridViewModel)
-            }
-            Log.d(TAG, "After Grid Game")
+            GridGame(state.mnemonicIds[GameType.Grid] ?:
+                        throw IllegalStateException("GameState doesn't include Grid game"))
+            SoundGame(state.mnemonicIds[GameType.Sound] ?:
+                        throw IllegalStateException("GameState doesn't include Sound game"))
 
             Row (
                 verticalAlignment = Alignment.Bottom,
@@ -137,51 +92,47 @@ fun GameScreen(
                     .padding(8.dp)
                     .fillMaxWidth()
             ) {
-
-                Log.d(TAG, "Before Repeat Guess Button")
                 RepeatGuessButton(
-                    gameViewModel = games[0],
+                    game = GameType.Grid,
+                    recallCheck = state.recallCheck[GameType.Grid],
+                    onGuess = onMnemGuess,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    isClicked = buttonClicks,
-                    index = 0
                 )
 
                 Spacer(modifier = Modifier.padding(4.dp))
 
                 RepeatGuessButton(
-                    gameViewModel = games[1],
+                    game = GameType.Sound,
+                    recallCheck = state.recallCheck[GameType.Sound],
+                    onGuess = onMnemGuess,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    isClicked = buttonClicks,
-                    index = 1
                 )
-                Log.d(TAG, "After Repeat Guess Button")
             }
         }
     }
-    Log.d(TAG, "After composable")
 }
 
 @Preview
 @Composable
 fun GameAppPreview() {
-    val gameModel = GameModel(GameSettings(4,25,1000))
+    val gameModel = GameViewModel(GameSettings(4,25,1000))
 
     GameScreen(
-        settings = gameModel.getSettings(),
+        settings = gameModel.gameSettings,
         onFinnish = {},
-        gameModel.getGames()
+        viewModel = gameModel,
+        onMnemGuess = gameModel::handleGuess
     )
 }
 
 @Composable
-fun TimerBar(totalTime: Float, currentTime: Float) {
-
+fun TimerBar(progress: Float) {
     LinearProgressIndicator(
-        progress = { currentTime / totalTime},
+        progress = { progress },
         modifier = Modifier.fillMaxWidth(),
         color = Color.Green,
         trackColor = Color.Red
@@ -189,23 +140,28 @@ fun TimerBar(totalTime: Float, currentTime: Float) {
 }
 
 @Composable
-fun RepeatGuessButton(gameViewModel: GameViewModel, modifier: Modifier, isClicked: MutableList<Boolean>, index: Int) {
+fun RepeatGuessButton(game: GameType, recallCheck: RecallCheck?, onGuess: (game: GameType) -> Unit, modifier: Modifier) {
     Button(
         modifier = modifier,
         shape = RectangleShape,
-        onClick = { isClicked[index] = true },
-        colors = when(isClicked[index]) {
-            true -> {
-                buttonColors(
-                    containerColor = if (gameViewModel.isRepeat) Color.Green else Color.Red
-                )
+        onClick = { onGuess(game) },
+        colors = when(recallCheck) {
+            RecallCheck.CORRECT -> {
+                buttonColors( Color.Green )
             }
-            false -> {
+            RecallCheck.INCORRECT -> {
+                buttonColors( Color.Red )
+            }
+            RecallCheck.NONE -> {
                 buttonColors()
+            }
+            null -> {
+                Log.wtf("RepeatGuessButton", "RecallCheck is null")
+                return
             }
         }
     ) {
-        Text(gameViewModel.gameButtonText)
+        Text("$game")
     }
 
 }

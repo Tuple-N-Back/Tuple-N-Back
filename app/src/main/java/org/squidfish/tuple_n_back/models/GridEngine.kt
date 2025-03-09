@@ -1,5 +1,8 @@
 package org.squidfish.tuple_n_back.models
 
+/**
+ * Enum of possible Grid Game states
+ */
 enum class GridPosition {
     NONE,
     UP_LEFT,
@@ -13,10 +16,11 @@ enum class GridPosition {
     DOWN_RIGHT,
 }
 
-class GridViewModel(recallsBack: Int) : GameViewModel(recallsBack) {
+class GridEngine(recallsBack: Int) : GameEngine(recallsBack) {
     override val gameButtonText = "Grid"
 
-    override fun genNewState(): Int {
+    // generates random grid position
+    override fun genNewMnemonic(): Int {
         return (GridPosition.entries.filter { it != GridPosition.NONE }.random()).ordinal
     }
 
