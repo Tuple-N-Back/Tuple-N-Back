@@ -2,6 +2,7 @@ package org.squidfish.tuple_n_back
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,35 +31,33 @@ import org.squidfish.tuple_n_back.models.RecallCheck
 import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GameType
 import org.squidfish.tuple_n_back.models.GameViewModel
-import org.squidfish.tuple_n_back.models.GridPosition
 
 
 @Composable
 fun GameScreen(
-    settings: GameSettings,
+    modifier: Modifier,
     onFinnish: () -> Unit,
     viewModel: GameViewModel = GameViewModel(GameSettings(2, 10, 200)),
-    onMnemGuess: (game: GameType) -> Unit
-    //games: List<GameEngine>
 ) {
     val TAG = "GameScreen"
     val state by viewModel.gameState.collectAsState()
 
-    // if game has ended - this is when game stats are updated
-    // TODO: more robust check
     if (state.gameOver) {
-        GameSummaryScreen(state.gameStats)
-        return
+        LaunchedEffect(Unit) {
+            onFinnish()
+        }
+        //GameSummaryScreen(state.gameStats)
+        //onFinnish()
     }
 
-    Scaffold() { innerPadding ->
-        Column (
+
+    Box(modifier) {
+        Column(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth()
-                .padding(innerPadding),
         ) {
             Column(
                 verticalArrangement = Arrangement.Top,
@@ -66,26 +65,31 @@ fun GameScreen(
             ) {
                 TimerBar(state.roundProgress)
 
-                Row (
+                Row(
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .padding(top = 32.dp)
                 ) {
                     Text(
-                        text = state.currentRound.toString() + "/" + settings.totalRounds.toString(),
+                        text = state.currentRound.toString() + "/" +
+                                viewModel.gameSettings.totalRounds.toString(),
                         fontSize = TextUnit(10f, TextUnitType.Em)
                     )
                 }
 
             }
 
-            GridGame(state.mnemonicIds[GameType.Grid] ?:
-                        throw IllegalStateException("GameState doesn't include Grid game"))
-            SoundGame(state.mnemonicIds[GameType.Sound] ?:
-                        throw IllegalStateException("GameState doesn't include Sound game"))
+            GridGame(
+                state.mnemonicIds[GameType.Grid]
+                    ?: throw IllegalStateException("GameState doesn't include Grid game")
+            )
+            SoundGame(
+                state.mnemonicIds[GameType.Piano]
+                    ?: throw IllegalStateException("GameState doesn't include Sound game")
+            )
 
-            Row (
+            Row(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier
@@ -95,7 +99,7 @@ fun GameScreen(
                 RepeatGuessButton(
                     game = GameType.Grid,
                     recallCheck = state.recallCheck[GameType.Grid],
-                    onGuess = onMnemGuess,
+                    onGuess = { viewModel.handleGuess(it) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -104,9 +108,9 @@ fun GameScreen(
                 Spacer(modifier = Modifier.padding(4.dp))
 
                 RepeatGuessButton(
-                    game = GameType.Sound,
-                    recallCheck = state.recallCheck[GameType.Sound],
-                    onGuess = onMnemGuess,
+                    game = GameType.Piano,
+                    recallCheck = state.recallCheck[GameType.Piano],
+                    onGuess = { viewModel.handleGuess(it) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -116,16 +120,16 @@ fun GameScreen(
     }
 }
 
+
 @Preview
 @Composable
-fun GameAppPreview() {
-    val gameModel = GameViewModel(GameSettings(4,25,1000))
+fun GameScreenPreview() {
+    val gameModel = GameViewModel(GameSettings(4,25,1000, games = listOf(GameType.Grid, GameType.Piano)))
 
     GameScreen(
-        settings = gameModel.gameSettings,
+        modifier = Modifier,
         onFinnish = {},
         viewModel = gameModel,
-        onMnemGuess = gameModel::handleGuess
     )
 }
 
@@ -144,7 +148,7 @@ fun RepeatGuessButton(game: GameType, recallCheck: RecallCheck?, onGuess: (game:
     Button(
         modifier = modifier,
         shape = RectangleShape,
-        onClick = { onGuess(game) },
+        onClick = { if (recallCheck == RecallCheck.NONE) onGuess(game) },
         colors = when(recallCheck) {
             RecallCheck.CORRECT -> {
                 buttonColors( Color.Green )

@@ -13,12 +13,16 @@ data class GameSettings (
 
 enum class GameType(@StringRes val type: Int) {
     Grid(R.string.grid_game),
-    Sound(R.string.sound_game);
+    Piano(R.string.sound_game),
+    Colour(3),
+    Vibration(4);
 
     fun toGameEngine(recallsBack: Int): GameEngine {
         return when (this) {
             Grid -> GridEngine(recallsBack)
-            Sound -> SoundGameEngine(recallsBack)
+            Piano -> SoundGameEngine(recallsBack)
+            Colour -> TODO()
+            Vibration -> TODO()
         }
     }
 }

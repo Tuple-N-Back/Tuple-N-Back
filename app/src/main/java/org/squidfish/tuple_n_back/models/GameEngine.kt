@@ -77,4 +77,8 @@ abstract class GameEngine(recallsBack: Int) {
      * @return the player's stats for the game
      */
     fun getStats() : GameStats = stats
+
+    fun resetStats() {
+        stats = GameStats()
+    }
 }

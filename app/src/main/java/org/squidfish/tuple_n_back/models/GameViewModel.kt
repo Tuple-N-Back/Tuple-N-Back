@@ -24,8 +24,21 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
     init {
         initGameEngines()
         initGameState(gameSettings.games)
-        Log.i(TAG, "Starting game")
+    }
+
+    fun startGame() {
+        Log.i(TAG,"Starting game")
         startNewRound()
+    }
+
+    fun resetGameState() {
+        gameEngines.forEach { (game, engine) ->
+            engine.resetStats()
+        }
+
+        _gameState.value = GameState()
+        initGameState(gameSettings.games)
+
     }
 
     private fun initGameEngines() {
@@ -120,6 +133,7 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
 
         // end round or end game and get stats
         if (_gameState.value.currentRound >= gameSettings.totalRounds) {
+            Log.i(TAG, "Ending game")
             val stats: MutableMap<GameType, GameStats> = mutableMapOf()
             gameEngines.forEach { (game, gameEngine) ->
                 stats[game] = gameEngine.getStats()

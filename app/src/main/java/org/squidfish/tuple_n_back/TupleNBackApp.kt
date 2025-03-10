@@ -9,11 +9,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.squidfish.tuple_n_back.models.GameSettings
+import org.squidfish.tuple_n_back.models.GameStats
 import org.squidfish.tuple_n_back.models.GameType
 import org.squidfish.tuple_n_back.models.GameViewModel
 
@@ -26,42 +28,61 @@ enum class ScreenType(@StringRes val title: Int) {
 
 @Composable
 fun TupleNBackApp (
-    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, games=listOf(GameType.Grid, GameType.Sound))),
+    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, games=listOf(GameType.Grid, GameType.Piano))),
     navController: NavHostController = rememberNavController()
 ) {
     val TAG = "TupleNBackApp"
-    //gameModel.setGames(listOf<GameType>(GameType.Grid, GameType.Sound))
 
     Scaffold(
         topBar = { TupleNBackAppBar() }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = ScreenType.Game.name,
+            startDestination = ScreenType.MainMenu.name,
             modifier = Modifier.padding(innerPadding)
         ) {
+
             composable(route = ScreenType.Game.name) {
-                Log.d(TAG, "Composing GameScreen")
+                Log.v(TAG, "Composing ${ScreenType.Game}")
                 GameScreen(
-                    settings = gameModel.gameSettings,
+                    modifier = Modifier,
                     onFinnish = {
-                        //gameModel.setStats(it)
                         navController.navigate(ScreenType.Summary.name)
                     },
                     viewModel = gameModel,
-                    onMnemGuess = gameModel::handleGuess
                 )
-                Log.d(TAG, "Finished GameScreen composition")
             }
             composable(route = ScreenType.Summary.name) {
-                Log.d(TAG, "Composing GameSummaryScreen")
-                //GameSummaryScreen()
-                Log.d(TAG, "Finished GameSummaryScreen composition")
+                Log.v(TAG, "Composing ${ScreenType.Summary}")
+                GameSummaryScreen(
+                    viewModel = gameModel,
+                    onPlayAgain = {
+                        navController.navigate(ScreenType.Game.name) {
+                            popUpTo(ScreenType.Game.name) {inclusive = true}
+                        }
+
+                        gameModel.resetGameState()
+                        gameModel.startGame()
+                    },
+                    onMainMenu = {
+                        navController.navigate(ScreenType.MainMenu.name) {
+                            popUpTo(0)
+                        }
+                        gameModel.resetGameState()
+                    }
+                )
+                Log.v(TAG, "Finished GameSummaryScreen composition")
+            }
+            composable(route = ScreenType.MainMenu.name) {
+                Log.v(TAG, "Composing ${ScreenType.MainMenu}")
+                MainMenuScreen(onStartGame = {
+                    navController.navigate(ScreenType.Game.name)
+                    gameModel.startGame()
+                })
             }
         }
 
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +92,12 @@ fun TupleNBackAppBar(
 ) {
     TopAppBar(
         title = { Text("Tuple-N-Back") },
-        modifier = modifier
+        //modifier = modifier
     )
+}
+
+@Preview
+@Composable
+fun TupleNBackAppPreview() {
+    TupleNBackApp()
 }
