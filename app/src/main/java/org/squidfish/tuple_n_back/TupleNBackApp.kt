@@ -28,7 +28,7 @@ enum class ScreenType(@StringRes val title: Int) {
 
 @Composable
 fun TupleNBackApp (
-    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, games=listOf(GameType.Grid, GameType.Piano))),
+    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, 15, games=listOf(GameType.Grid, GameType.Piano))),
     navController: NavHostController = rememberNavController()
 ) {
     val TAG = "TupleNBackApp"

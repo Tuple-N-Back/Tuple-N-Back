@@ -7,8 +7,9 @@ data class GameSettings (
     val recallsBack: Int,
     val totalRounds: Int,
     val milliPerRound: Long,
+    val repeatChance: Int,
     val timerUpdateInterval: Long = 50, // in millis
-    val games: List<GameType> = listOf()
+    val games: List<GameType> = listOf(),
 )
 
 enum class GameType(@StringRes val type: Int) {
@@ -17,10 +18,10 @@ enum class GameType(@StringRes val type: Int) {
     Colour(3),
     Vibration(4);
 
-    fun toGameEngine(recallsBack: Int): GameEngine {
+    fun toGameEngine(recallsBack: Int, repeatChance: Int): GameEngine {
         return when (this) {
-            Grid -> GridEngine(recallsBack)
-            Piano -> SoundGameEngine(recallsBack)
+            Grid -> GridEngine(recallsBack, repeatChance)
+            Piano -> SoundGameEngine(recallsBack, repeatChance)
             Colour -> TODO()
             Vibration -> TODO()
         }

@@ -37,7 +37,7 @@ import org.squidfish.tuple_n_back.models.GameViewModel
 fun GameScreen(
     modifier: Modifier,
     onFinnish: () -> Unit,
-    viewModel: GameViewModel = GameViewModel(GameSettings(2, 10, 200)),
+    viewModel: GameViewModel,
 ) {
     val TAG = "GameScreen"
     val state by viewModel.gameState.collectAsState()
@@ -124,7 +124,7 @@ fun GameScreen(
 @Preview
 @Composable
 fun GameScreenPreview() {
-    val gameModel = GameViewModel(GameSettings(4,25,1000, games = listOf(GameType.Grid, GameType.Piano)))
+    val gameModel = GameViewModel(GameSettings(4,25,1000, 15, games = listOf(GameType.Grid, GameType.Piano)))
 
     GameScreen(
         modifier = Modifier,

@@ -150,6 +150,6 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-    val vm = GameViewModel(GameSettings(2,10, 1500, 50, listOf(GameType.Grid, GameType.Piano)))
+    val vm = GameViewModel(GameSettings(2,10, 1500, 50, 15, listOf(GameType.Grid, GameType.Piano)))
     GameSummaryScreen(vm, {}, {})
 }

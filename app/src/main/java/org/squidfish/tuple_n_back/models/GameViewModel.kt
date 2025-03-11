@@ -47,7 +47,7 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
             throw IllegalArgumentException("No game types set in settings")
         }
 
-        gameSettings.games.forEach { gameEngines[it] = it.toGameEngine(gameSettings.recallsBack) }
+        gameSettings.games.forEach { gameEngines[it] = it.toGameEngine(gameSettings.recallsBack, gameSettings.repeatChance) }
     }
 
     private fun initGameState(games: List<GameType>) {
@@ -88,6 +88,7 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
      */
     private fun startNewRound() {
         Log.d(TAG, "Starting new round")
+        _gameState.update { it.copy (currentRound = it.currentRound + 1) }
 
         Log.d(TAG, "Generating round mnemonics")
         gameEngines.forEach { (game, gameEngine) ->
@@ -128,8 +129,6 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
                 _gameState.update { it.apply { it.recallCheck[game] = RecallCheck.NONE } }
             }
         }
-
-        _gameState.update { it.copy (currentRound = it.currentRound + 1) }
 
         // end round or end game and get stats
         if (_gameState.value.currentRound >= gameSettings.totalRounds) {

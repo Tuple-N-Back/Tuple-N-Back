@@ -4,14 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaPlayer
 import android.util.Log
-import org.squidfish.tuple_n_back.games.SoundGame
 
 
-class SoundGameEngine(recallsBack: Int) : GameEngine(recallsBack) {
+class SoundGameEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsBack, repeatChance) {
     override val gameButtonText = "Sound"
 
-    override fun genNewMnemonic(): Int {
-         return SoundGameEngine.keys.indices.random()
+    override fun genNewMnemonic(forbiddem: List<Int?>): Int {
+         return SoundGameEngine.keys.indices.filter { !forbiddem.contains(it) }.random()
     }
 
     companion object {
