@@ -3,6 +3,7 @@ package org.squidfish.tuple_n_back.models
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import org.squidfish.tuple_n_back.R
+import org.squidfish.tuple_n_back.games.GridGame
 
 data class GameSettings (
     val recallsBack: Int,
@@ -10,7 +11,6 @@ data class GameSettings (
     val milliPerRound: Long,
     val repeatChance: Int,
     val timerUpdateInterval: Long = 50, // in millis
-    val games: List<GameType> = listOf(),
 )
 
 enum class GameType(@StringRes val type: Int) {
@@ -38,7 +38,8 @@ enum class GameType(@StringRes val type: Int) {
     }
 }
 
-enum class Game(val modules: List<GameType>) {
-    GridPiano(listOf(GameType.Grid, GameType.Piano)),
-    Grid(listOf(GameType.Grid))
+enum class Game(val modules: List<GameType>, val settings: GameSettings) {
+    None(listOf(), GameSettings(-1,-1,-1,-1)),
+    GridPiano(listOf(GameType.Grid, GameType.Piano), GameSettings(2, 3, 1500, 15)),
+    Grid(listOf(GameType.Grid), GameSettings(2, 3, 1500, 20 ))
 }

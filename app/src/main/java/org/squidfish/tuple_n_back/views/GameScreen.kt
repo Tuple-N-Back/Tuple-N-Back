@@ -1,6 +1,7 @@
-package org.squidfish.tuple_n_back
+package org.squidfish.tuple_n_back.views
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.LinearProgressIndicator
@@ -30,6 +32,7 @@ import org.squidfish.tuple_n_back.games.SoundGame
 import org.squidfish.tuple_n_back.models.AppEvent
 import org.squidfish.tuple_n_back.models.RecallCheck
 import org.squidfish.tuple_n_back.models.GameSettings
+import org.squidfish.tuple_n_back.models.GameState
 import org.squidfish.tuple_n_back.models.GameType
 import org.squidfish.tuple_n_back.models.GameViewModel
 
@@ -38,6 +41,7 @@ import org.squidfish.tuple_n_back.models.GameViewModel
 fun GameScreen(
     modifier: Modifier,
     onFinnish: () -> Unit,
+    onAbort: () -> Unit,
     viewModel: GameViewModel,
 ) {
     val TAG = "GameScreen"
@@ -47,6 +51,10 @@ fun GameScreen(
         LaunchedEffect(Unit) {
             onFinnish()
         }
+    }
+
+    BackHandler {
+        onAbort()
     }
 
 
@@ -72,21 +80,14 @@ fun GameScreen(
                 ) {
                     Text(
                         text = state.currentRound.toString() + "/" +
-                                viewModel.gameSettings.totalRounds.toString(),
+                                viewModel.game.settings.totalRounds.toString(),
                         fontSize = TextUnit(10f, TextUnitType.Em)
                     )
                 }
 
             }
 
-            GridGame(
-                state.mnemonicIds[GameType.Grid]
-                    ?: throw IllegalStateException("GameState doesn't include Grid game")
-            )
-            SoundGame(
-                state.mnemonicIds[GameType.Piano]
-                    ?: throw IllegalStateException("GameState doesn't include Sound game")
-            )
+            Games(state.mnemonicIds, viewModel.game.modules)
 
             Row(
                 verticalAlignment = Alignment.Bottom,
@@ -95,24 +96,11 @@ fun GameScreen(
                     .padding(8.dp)
                     .fillMaxWidth()
             ) {
-                RepeatGuessButton(
-                    game = GameType.Grid,
-                    recallCheck = state.recallCheck[GameType.Grid],
-                    onGuess = { viewModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(it)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                )
-
-                Spacer(modifier = Modifier.padding(4.dp))
-
-                RepeatGuessButton(
-                    game = GameType.Piano,
-                    recallCheck = state.recallCheck[GameType.Piano],
-                    onGuess = { viewModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(it)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                RepeatGuessButtons(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    recallGuesses = state.recallCheck,
+                    games = viewModel.game.modules,
+                    onGuess = { viewModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(it)) }
                 )
             }
         }
@@ -123,11 +111,12 @@ fun GameScreen(
 @Preview
 @Composable
 fun GameScreenPreview() {
-    val gameModel = GameViewModel(GameSettings(4,25,1000, 15, games = listOf(GameType.Grid, GameType.Piano)))
+    val gameModel = GameViewModel()
 
     GameScreen(
         modifier = Modifier,
         onFinnish = {},
+        onAbort = {},
         viewModel = gameModel,
     )
 }
@@ -165,6 +154,42 @@ fun RepeatGuessButton(game: GameType, recallCheck: RecallCheck?, onGuess: (game:
         }
     ) {
         Text("$game")
+    }
+
+}
+
+@Composable
+fun Games(mnems: Map<GameType, Int>, games: List<GameType>) {
+    games.forEach { game ->
+        val mnem: Int = mnems[game] ?: return
+
+        when(game) {
+            GameType.Grid -> GridGame(mnem)
+            GameType.Piano -> SoundGame(mnem)
+            GameType.Colour -> TODO()
+            GameType.Vibration -> TODO()
+        }
+    }
+}
+
+@Composable
+fun RepeatGuessButtons(
+    modifier: Modifier,
+    recallGuesses: Map<GameType, RecallCheck>,
+    games: List<GameType>,
+    onGuess: (GameType) -> Unit
+) {
+    games.forEach { game ->
+        val recallState: RecallCheck = recallGuesses[game] ?: return
+
+        RepeatGuessButton(
+            game = game,
+            recallCheck = recallState,
+            onGuess = { onGuess(it) },
+            modifier = modifier
+        )
+
+        Spacer(Modifier.size(4.dp))
     }
 
 }

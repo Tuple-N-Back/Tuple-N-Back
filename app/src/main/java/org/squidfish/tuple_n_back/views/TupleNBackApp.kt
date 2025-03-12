@@ -1,5 +1,6 @@
-package org.squidfish.tuple_n_back
+package org.squidfish.tuple_n_back.views
 
+import android.app.Activity
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
@@ -9,26 +10,33 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.squidfish.tuple_n_back.MainActivity
+import org.squidfish.tuple_n_back.R
 import org.squidfish.tuple_n_back.models.AppEvent
+import org.squidfish.tuple_n_back.models.Game
 import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GameType
 import org.squidfish.tuple_n_back.models.GameViewModel
+import kotlin.system.exitProcess
 
 
 enum class ScreenType(@StringRes val title: Int) {
     GameSelection(R.string.game_selection_screen_name),
     Game(R.string.game_screen_name),
-    Summary(R.string.summary_screen_name)
+    Summary(R.string.summary_screen_name),
+    MainMenu(R.string.main_menu_screen_name)
 }
 
 @Composable
 fun TupleNBackApp (
-    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, 15, 30, games=listOf(GameType.Grid, GameType.Piano))),
+    gameModel: GameViewModel = GameViewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val TAG = "TupleNBackApp"
@@ -38,7 +46,7 @@ fun TupleNBackApp (
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = ScreenType.GameSelection.name,
+            startDestination = ScreenType.MainMenu.name,
             modifier = Modifier.padding(innerPadding)
         ) {
 
@@ -48,6 +56,11 @@ fun TupleNBackApp (
                     modifier = Modifier,
                     onFinnish = {
                         navController.navigate(ScreenType.Summary.name)
+                    },
+                    onAbort = {
+                        gameModel.onEvent(AppEvent.AbortOngoingGame)
+                        gameModel.onEvent(AppEvent.ResetGameState)
+                        navController.navigate(ScreenType.MainMenu.name)
                     },
                     viewModel = gameModel,
                 )
@@ -65,20 +78,40 @@ fun TupleNBackApp (
                         gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onMainMenu = {
-                        navController.navigate(ScreenType.GameSelection.name) {
-                            popUpTo(0)
+                        navController.navigate(ScreenType.MainMenu.name) {
+                            popUpTo(ScreenType.MainMenu.name)
                         }
+
                         gameModel.onEvent(AppEvent.ResetGameState)
                     }
                 )
                 Log.v(TAG, "Finished GameSummaryScreen composition")
             }
+
             composable(route = ScreenType.GameSelection.name) {
                 Log.v(TAG, "Composing ${ScreenType.GameSelection}")
-                GameSelectionScreen(onStartGame = {
+                GameSelectionScreen(onStartGame = { game: Game ->
                     navController.navigate(ScreenType.Game.name)
-                    gameModel.onEvent(AppEvent.PlayAgain)
+                    gameModel.onEvent(AppEvent.StartGame(game))
                 })
+            }
+
+            composable(route = ScreenType.MainMenu.name) {
+                MainMenuScreen(
+                    onSelectGameMode = {
+                        navController.navigate(ScreenType.GameSelection.name)
+                    },
+                    onPlayRecent = {
+                        navController.navigate(ScreenType.Game.name)
+                        gameModel.onEvent(AppEvent.PlayAgain)
+                    },
+                    onSettings = {},
+                    onInfo = {},
+                    onExit = {
+                        MainActivity().finish()
+                        exitProcess(0)
+                    },
+                )
             }
         }
 

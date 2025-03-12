@@ -1,4 +1,4 @@
-package org.squidfish.tuple_n_back
+package org.squidfish.tuple_n_back.views
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -29,6 +30,9 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.squidfish.tuple_n_back.R
+import org.squidfish.tuple_n_back.models.AppEvent
+import org.squidfish.tuple_n_back.models.Game
 import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GameStats
 import org.squidfish.tuple_n_back.models.GameType
@@ -43,7 +47,7 @@ fun GameSummaryScreen(
 ) {
     val TAG = "GameScreen"
     val state by viewModel.gameState.collectAsState()
-    val sortedStats = state.gameStats.toSortedMap().entries.toList()
+    val sortedStats = remember(state.gameStats) {state.gameStats.toSortedMap().entries.toList()}
 
     Column (verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -148,6 +152,8 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-    val vm = GameViewModel(GameSettings(2,10, 1500, 50, 15, listOf(GameType.Grid, GameType.Piano)))
+    val vm = GameViewModel()
+    vm.game = Game.GridPiano
+    vm.onEvent(AppEvent.ResetGameState)
     GameSummaryScreen(vm, {}, {})
 }

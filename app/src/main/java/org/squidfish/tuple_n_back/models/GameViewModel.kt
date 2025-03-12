@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
+class GameViewModel() : ViewModel() {
     val TAG = "GameViewModel"
 
     private val _gameState = MutableStateFlow(GameState())
@@ -20,51 +20,79 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
     private var timerJob: Job? = null
 
     private val gameEngines = mutableMapOf<GameType, GameEngine>()
+    var game: Game = Game.None // TODO: load game played on last session
 
-    init {
-        initGameEngines()
-        initGameState(gameSettings.games)
-    }
 
     fun onEvent(event: AppEvent) {
         when (event) {
-            is AppEvent.PlayAgain -> startGame()
-            is AppEvent.ResetGameState -> resetGameState()
-            is AppEvent.MakeMnemonicRepeatGuess -> handleGuess(event.game)
+            is AppEvent.PlayAgain -> {
+                Log.i(TAG,"Playing again")
+                startGame(game)
+            }
+            is AppEvent.ResetGameState -> {
+                Log.i(TAG,"Resetting game state")
+                resetGameState()
+            }
+            is AppEvent.MakeMnemonicRepeatGuess -> {
+                Log.i(TAG,"Handling button guess")
+                handleGuess(event.game)
+            }
+            is AppEvent.AbortOngoingGame -> {
+                Log.i(TAG,"Aborting game")
+                abortGame()
+            }
+            is AppEvent.StartGame -> {
+                Log.i(TAG,"Starting game: $event.game")
+                startGame(event.game)
+            }
         }
     }
 
-    private fun startGame() {
+    private fun startGame(game: Game) {
+        this.game = game
+
+        gameEngines.clear()
+        initGameEngines()
+        initGameState()
         Log.i(TAG,"Starting game")
         startNewRound()
     }
 
     private fun resetGameState() {
-        gameEngines.forEach { (game, engine) ->
+        verifyGame()
+
+        // TODO: this for PlayAgain?
+        gameEngines.forEach { (_, engine) ->
             engine.resetStats()
         }
 
         _gameState.value = GameState()
-        initGameState(gameSettings.games)
-
     }
 
     private fun initGameEngines() {
         Log.i(TAG, "Initializing game engines")
-        if (gameSettings.games.isEmpty()) {
+
+        verifyGame()
+
+        if (game.modules.isEmpty()) {
             throw IllegalArgumentException("No game types set in settings")
         }
 
-        gameSettings.games.forEach { gameEngines[it] = it.toGameEngine(gameSettings.recallsBack, gameSettings.repeatChance) }
+        game.modules.forEach {
+            gameEngines[it] = it.toGameEngine(game.settings.recallsBack, game.settings.repeatChance)
+        }
     }
 
-    private fun initGameState(games: List<GameType>) {
+    private fun initGameState() {
         Log.i(TAG, "Initializing game state")
-        games.forEach { game ->
+
+        verifyGame()
+
+        game.modules.forEach { module ->
             _gameState.update { it.apply {
-                it.mnemonicIds[game] = 0
-                it.gameStats[game] = GameStats()
-                it.recallCheck[game] = RecallCheck.NONE
+                it.mnemonicIds[module] = 0
+                it.gameStats[module] = GameStats()
+                it.recallCheck[module] = RecallCheck.NONE
                 }
             }
         }
@@ -103,14 +131,16 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
             _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
         }
 
+        verifyGame()
+
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
-            for (time in 0..gameSettings.milliPerRound step gameSettings.timerUpdateInterval) {
+            for (time in 0..game.settings.milliPerRound step game.settings.timerUpdateInterval) {
                 _gameState.update {
-                    it.copy(roundProgress = time.toFloat() / gameSettings.milliPerRound)
+                    it.copy(roundProgress = time.toFloat() / game.settings.milliPerRound)
                 }
 
-                delay(gameSettings.timerUpdateInterval)
+                delay(game.settings.timerUpdateInterval)
             }
 
             endRound()
@@ -138,16 +168,32 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
             }
         }
 
+        verifyGame()
         // end round or end game and get stats
-        if (_gameState.value.currentRound >= gameSettings.totalRounds) {
-            Log.i(TAG, "Ending game")
+        if (_gameState.value.currentRound >= game.settings.totalRounds) {
             _gameState.update { it.copy(gameOver = true).apply {
                 gameEngines.forEach { (game, gameEngine) ->
                     it.gameStats[game] = gameEngine.getStats()
                 }
-            } }
+            }}
         } else {
             startNewRound()
+        }
+    }
+
+    private fun abortGame() {
+        Log.i(TAG, "Aborting game")
+
+        timerJob?.cancel()
+    }
+
+    /**
+     * Check if game is set i.e. is not Game.None. If not, log and throw an exception
+     */
+    private fun verifyGame() {
+        if (game == Game.None) {
+            Log.e(TAG, "Cannot reset game state - game is not set")
+            throw IllegalStateException("Game is not set")
         }
     }
 

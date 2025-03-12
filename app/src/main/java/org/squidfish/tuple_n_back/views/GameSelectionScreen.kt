@@ -1,4 +1,4 @@
-package org.squidfish.tuple_n_back
+package org.squidfish.tuple_n_back.views
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -26,31 +27,26 @@ import androidx.compose.ui.unit.dp
 import org.squidfish.tuple_n_back.models.Game
 
 @Composable
-fun GameSelectionScreen(onStartGame: () -> Unit) {
+fun GameSelectionScreen(onStartGame: (Game) -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val games = remember() {
+            Game.entries.filter { it != Game.None}.toTypedArray()
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Top
         ) {
-            items(Game.entries.toTypedArray()) { game ->
-                // TODO: fetch
-                GameCard(game, 2, 123, onStartGame)
+            items(games) { game ->
+                // TODO: fetch highestLvl and totalGames
+                GameCard(game, 2, 123) { onStartGame(game) }
             }
         }
     }
-    //Column(
-    //    modifier = Modifier.fillMaxSize(),
-    //    verticalArrangement = Arrangement.Center,
-    //    horizontalAlignment = Alignment.CenterHorizontally
-    //) {
-    //    Button(onClick = onStartGame) {
-    //        Text("Start New Game")
-    //    }
-    //}
 }
 
 @Composable

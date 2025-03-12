@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import org.squidfish.tuple_n_back.ui.theme.TupleNbackTheme
+import org.squidfish.tuple_n_back.views.TupleNBackApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
