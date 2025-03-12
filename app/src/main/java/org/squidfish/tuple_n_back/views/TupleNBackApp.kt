@@ -102,6 +102,11 @@ fun TupleNBackApp (
                         navController.navigate(ScreenType.GameSelection.name)
                     },
                     onPlayRecent = {
+                        if (gameModel.game == Game.None) {
+                            Log.w(TAG, "Cannot play recent: No game played previously")
+                            return@MainMenuScreen
+                        }
+
                         navController.navigate(ScreenType.Game.name)
                         gameModel.onEvent(AppEvent.PlayAgain)
                     },

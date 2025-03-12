@@ -49,6 +49,11 @@ class GameViewModel() : ViewModel() {
     }
 
     private fun startGame(game: Game) {
+        if (game == Game.None) {
+            Log.w(TAG, "Cannot start a game of type None")
+            return
+        }
+
         this.game = game
 
         gameEngines.clear()
