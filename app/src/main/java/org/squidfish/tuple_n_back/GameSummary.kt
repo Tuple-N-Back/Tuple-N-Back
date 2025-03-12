@@ -98,16 +98,16 @@ fun StatCard(modifier: Modifier, game: GameType, stats: GameStats) {
         // Icon and name
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp, top = 8.dp, start = 8.dp)
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = ImageVector.vectorResource(game.toGameIconRes()),
                 contentDescription = "$game",
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(40.dp).padding(top=2.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Text(
                 text = "$game",

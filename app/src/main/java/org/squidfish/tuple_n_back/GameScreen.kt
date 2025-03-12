@@ -47,8 +47,6 @@ fun GameScreen(
         LaunchedEffect(Unit) {
             onFinnish()
         }
-        //GameSummaryScreen(state.gameStats)
-        //onFinnish()
     }
 
 

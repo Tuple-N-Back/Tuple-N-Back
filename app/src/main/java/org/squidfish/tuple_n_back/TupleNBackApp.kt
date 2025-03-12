@@ -16,13 +16,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.squidfish.tuple_n_back.models.AppEvent
 import org.squidfish.tuple_n_back.models.GameSettings
-import org.squidfish.tuple_n_back.models.GameStats
 import org.squidfish.tuple_n_back.models.GameType
 import org.squidfish.tuple_n_back.models.GameViewModel
 
 
 enum class ScreenType(@StringRes val title: Int) {
-    MainMenu(R.string.main_menu_screen_name),
+    GameSelection(R.string.game_selection_screen_name),
     Game(R.string.game_screen_name),
     Summary(R.string.summary_screen_name)
 }
@@ -39,7 +38,7 @@ fun TupleNBackApp (
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = ScreenType.MainMenu.name,
+            startDestination = ScreenType.GameSelection.name,
             modifier = Modifier.padding(innerPadding)
         ) {
 
@@ -66,7 +65,7 @@ fun TupleNBackApp (
                         gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onMainMenu = {
-                        navController.navigate(ScreenType.MainMenu.name) {
+                        navController.navigate(ScreenType.GameSelection.name) {
                             popUpTo(0)
                         }
                         gameModel.onEvent(AppEvent.ResetGameState)
@@ -74,9 +73,9 @@ fun TupleNBackApp (
                 )
                 Log.v(TAG, "Finished GameSummaryScreen composition")
             }
-            composable(route = ScreenType.MainMenu.name) {
-                Log.v(TAG, "Composing ${ScreenType.MainMenu}")
-                MainMenuScreen(onStartGame = {
+            composable(route = ScreenType.GameSelection.name) {
+                Log.v(TAG, "Composing ${ScreenType.GameSelection}")
+                GameSelectionScreen(onStartGame = {
                     navController.navigate(ScreenType.Game.name)
                     gameModel.onEvent(AppEvent.PlayAgain)
                 })

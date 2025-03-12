@@ -1,5 +1,6 @@
 package org.squidfish.tuple_n_back.models
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import org.squidfish.tuple_n_back.R
 
@@ -26,4 +27,18 @@ enum class GameType(@StringRes val type: Int) {
             Vibration -> TODO()
         }
     }
+
+    fun toGameIconRes(): Int {
+        return when (this) {
+            Grid -> R.drawable.grid_game_icon
+            Piano -> R.drawable.piano_game_icon
+
+            else -> TODO()
+        }
+    }
+}
+
+enum class Game(val modules: List<GameType>) {
+    GridPiano(listOf(GameType.Grid, GameType.Piano)),
+    Grid(listOf(GameType.Grid))
 }

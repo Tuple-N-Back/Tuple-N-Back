@@ -4,5 +4,6 @@
     <string name="sound_game">Sound</string>
     <string name="game_screen_name">Game</string>
     <string name="summary_screen_name">Summary</string>
+    <string name="game_selection_screen_name">Game Selection</string>
     <string name="main_menu_screen_name">Main Menu</string>
 </resources>
