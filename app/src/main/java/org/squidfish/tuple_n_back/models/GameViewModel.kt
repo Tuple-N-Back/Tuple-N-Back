@@ -26,12 +26,20 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
         initGameState(gameSettings.games)
     }
 
-    fun startGame() {
+    fun onEvent(event: AppEvent) {
+        when (event) {
+            is AppEvent.PlayAgain -> startGame()
+            is AppEvent.ResetGameState -> resetGameState()
+            is AppEvent.MakeMnemonicRepeatGuess -> handleGuess(event.game)
+        }
+    }
+
+    private fun startGame() {
         Log.i(TAG,"Starting game")
         startNewRound()
     }
 
-    fun resetGameState() {
+    private fun resetGameState() {
         gameEngines.forEach { (game, engine) ->
             engine.resetStats()
         }
@@ -66,7 +74,7 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
      * When recall button is pressed, handleGuess is called. Updates some stats and changes
      * gameState, so that the recall button is coloured appropriately.
      */
-    fun handleGuess(game: GameType) {
+    private fun handleGuess(game: GameType) {
         Log.d(TAG, "$game Button pressed")
 
         if (gameEngines[game] == null) {
@@ -133,11 +141,11 @@ class GameViewModel(val gameSettings: GameSettings) : ViewModel() {
         // end round or end game and get stats
         if (_gameState.value.currentRound >= gameSettings.totalRounds) {
             Log.i(TAG, "Ending game")
-            val stats: MutableMap<GameType, GameStats> = mutableMapOf()
-            gameEngines.forEach { (game, gameEngine) ->
-                stats[game] = gameEngine.getStats()
-            }
-            _gameState.update { it.copy(gameStats = stats, gameOver = true) }
+            _gameState.update { it.copy(gameOver = true).apply {
+                gameEngines.forEach { (game, gameEngine) ->
+                    it.gameStats[game] = gameEngine.getStats()
+                }
+            } }
         } else {
             startNewRound()
         }

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import org.squidfish.tuple_n_back.games.GridGame
 import org.squidfish.tuple_n_back.games.SoundGame
+import org.squidfish.tuple_n_back.models.AppEvent
 import org.squidfish.tuple_n_back.models.RecallCheck
 import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GameType
@@ -99,7 +100,7 @@ fun GameScreen(
                 RepeatGuessButton(
                     game = GameType.Grid,
                     recallCheck = state.recallCheck[GameType.Grid],
-                    onGuess = { viewModel.handleGuess(it) },
+                    onGuess = { viewModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(it)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -110,7 +111,7 @@ fun GameScreen(
                 RepeatGuessButton(
                     game = GameType.Piano,
                     recallCheck = state.recallCheck[GameType.Piano],
-                    onGuess = { viewModel.handleGuess(it) },
+                    onGuess = { viewModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(it)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),

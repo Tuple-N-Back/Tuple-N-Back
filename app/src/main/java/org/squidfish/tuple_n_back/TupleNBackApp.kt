@@ -14,6 +14,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.squidfish.tuple_n_back.models.AppEvent
 import org.squidfish.tuple_n_back.models.GameSettings
 import org.squidfish.tuple_n_back.models.GameStats
 import org.squidfish.tuple_n_back.models.GameType
@@ -28,7 +29,7 @@ enum class ScreenType(@StringRes val title: Int) {
 
 @Composable
 fun TupleNBackApp (
-    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, 15, games=listOf(GameType.Grid, GameType.Piano))),
+    gameModel: GameViewModel= GameViewModel(GameSettings(2,10,1500, 15, 30, games=listOf(GameType.Grid, GameType.Piano))),
     navController: NavHostController = rememberNavController()
 ) {
     val TAG = "TupleNBackApp"
@@ -61,14 +62,14 @@ fun TupleNBackApp (
                             popUpTo(ScreenType.Game.name) {inclusive = true}
                         }
 
-                        gameModel.resetGameState()
-                        gameModel.startGame()
+                        gameModel.onEvent(AppEvent.ResetGameState)
+                        gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onMainMenu = {
                         navController.navigate(ScreenType.MainMenu.name) {
                             popUpTo(0)
                         }
-                        gameModel.resetGameState()
+                        gameModel.onEvent(AppEvent.ResetGameState)
                     }
                 )
                 Log.v(TAG, "Finished GameSummaryScreen composition")
@@ -77,7 +78,7 @@ fun TupleNBackApp (
                 Log.v(TAG, "Composing ${ScreenType.MainMenu}")
                 MainMenuScreen(onStartGame = {
                     navController.navigate(ScreenType.Game.name)
-                    gameModel.startGame()
+                    gameModel.onEvent(AppEvent.PlayAgain)
                 })
             }
         }

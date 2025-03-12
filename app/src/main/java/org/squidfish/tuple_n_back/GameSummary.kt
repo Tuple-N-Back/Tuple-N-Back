@@ -66,7 +66,6 @@ fun GameSummaryScreen(
                 shape = RectangleShape,
                 onClick = {
                     Log.d(TAG, "Pressed PlayAgain button")
-                    //viewModel.resetGameState()
                     onPlayAgain()
                 },
             ) {
@@ -82,7 +81,6 @@ fun GameSummaryScreen(
                 shape = RectangleShape,
                 onClick = {
                     Log.d(TAG, "Pressed MainMenu button")
-                    //viewModel.resetGameState()
                     onMainMenu()
                 },
             ) {
