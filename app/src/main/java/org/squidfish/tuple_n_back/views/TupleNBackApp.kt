@@ -1,6 +1,5 @@
 package org.squidfish.tuple_n_back.views
 
-import android.app.Activity
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
@@ -10,19 +9,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.squidfish.tuple_n_back.MainActivity
 import org.squidfish.tuple_n_back.R
 import org.squidfish.tuple_n_back.models.AppEvent
-import org.squidfish.tuple_n_back.models.Game
-import org.squidfish.tuple_n_back.models.GameSettings
-import org.squidfish.tuple_n_back.models.GameType
+import org.squidfish.tuple_n_back.games.Game
 import org.squidfish.tuple_n_back.models.GameViewModel
 import kotlin.system.exitProcess
 

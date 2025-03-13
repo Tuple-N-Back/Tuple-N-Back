@@ -10,7 +10,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.squidfish.tuple_n_back.games.Game
+import org.squidfish.tuple_n_back.games.GameModule
+import org.squidfish.tuple_n_back.games.engines.GameEngine
 
+/**
+ * The views pass events to this class
+ *
+ * TODO: The game should handle its game engines.
+ *
+ * @property[gameState] The [GameState] used to push data to the views.
+ * @property[_gameState] [gameState], but mutable and used internally
+ * @property[timerJob] Timer, used to count when a round will end in a game.
+ * @property[gameEngines] List of game engines for the current [Game].
+ * @property[game] The type of [Game] that is being played.
+ *
+ * @see[AppEvent]
+ */
 class GameViewModel() : ViewModel() {
     val TAG = "GameViewModel"
 
@@ -19,10 +35,15 @@ class GameViewModel() : ViewModel() {
 
     private var timerJob: Job? = null
 
-    private val gameEngines = mutableMapOf<GameType, GameEngine>()
+    private val gameEngines = mutableMapOf<GameModule, GameEngine>()
     var game: Game = Game.None // TODO: load game played on last session
 
 
+    /**
+     * Receive and handle view events
+     *
+     * @see[AppEvent]
+     */
     fun onEvent(event: AppEvent) {
         when (event) {
             is AppEvent.PlayAgain -> {
@@ -35,7 +56,7 @@ class GameViewModel() : ViewModel() {
             }
             is AppEvent.MakeMnemonicRepeatGuess -> {
                 Log.i(TAG,"Handling button guess")
-                handleGuess(event.game)
+                handleGuess(event.gameMod)
             }
             is AppEvent.AbortOngoingGame -> {
                 Log.i(TAG,"Aborting game")
@@ -48,13 +69,12 @@ class GameViewModel() : ViewModel() {
         }
     }
 
+    /**
+     * Starts a new game. Also handles all necessary initialization
+     */
     private fun startGame(game: Game) {
-        if (game == Game.None) {
-            Log.w(TAG, "Cannot start a game of type None")
-            return
-        }
-
         this.game = game
+        verifyGame()
 
         gameEngines.clear()
         initGameEngines()
@@ -63,6 +83,10 @@ class GameViewModel() : ViewModel() {
         startNewRound()
     }
 
+    /**
+     * Reset the game state. This does NOT change the loaded game modules i.e. their respective
+     * engines.
+     */
     private fun resetGameState() {
         verifyGame()
 
@@ -74,6 +98,10 @@ class GameViewModel() : ViewModel() {
         _gameState.value = GameState()
     }
 
+    /**
+     * Create a new [GameEngine] for all game modules in [game]. If a [GameEngine] already exists,
+     * it is overwritten.
+     */
     private fun initGameEngines() {
         Log.i(TAG, "Initializing game engines")
 
@@ -88,6 +116,9 @@ class GameViewModel() : ViewModel() {
         }
     }
 
+    /**
+     * Set the correct game module information to the [gameState].
+     */
     private fun initGameState() {
         Log.i(TAG, "Initializing game state")
 
@@ -104,10 +135,15 @@ class GameViewModel() : ViewModel() {
     }
 
     /**
+     * Handles a mnemonic repeat guess event.
+     *
      * When recall button is pressed, handleGuess is called. Updates some stats and changes
      * gameState, so that the recall button is coloured appropriately.
+     *
+     * @param[game] the game module the guess is made towards.
+     *
      */
-    private fun handleGuess(game: GameType) {
+    private fun handleGuess(game: GameModule) {
         Log.d(TAG, "$game Button pressed")
 
         if (gameEngines[game] == null) {
@@ -124,8 +160,10 @@ class GameViewModel() : ViewModel() {
     }
 
     /**
-     * Starts a new game round, that is, generates a new mnemonic number and start the round timer
+     * Starts a new game round, that is, creates a new mnemonic and start the round timer
      * coroutine.
+     *
+     * @see [GameEngine.createNewState]
      */
     private fun startNewRound() {
         Log.d(TAG, "Starting new round")
@@ -154,7 +192,7 @@ class GameViewModel() : ViewModel() {
 
     /**
      * Ends round, i.e, stops the round timer, increments the round counter and resets the recall
-     * check state. On game end, adds stats to the game state
+     * check state. On game end, adds stats to the [GameState].
      */
     private fun endRound() {
         Log.d(TAG, "Ending round")
@@ -186,6 +224,9 @@ class GameViewModel() : ViewModel() {
         }
     }
 
+    /**
+     * Ends the ongoing game before it has finished. Stats are not saved
+     */
     private fun abortGame() {
         Log.i(TAG, "Aborting game")
 
@@ -194,6 +235,8 @@ class GameViewModel() : ViewModel() {
 
     /**
      * Check if game is set i.e. is not Game.None. If not, log and throw an exception
+     *
+     * TODO: move away from using it -unnecessarily- in every function
      */
     private fun verifyGame() {
         if (game == Game.None) {

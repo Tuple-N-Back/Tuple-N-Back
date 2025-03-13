@@ -27,13 +27,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuple_n_back.games.GridGame
-import org.squidfish.tuple_n_back.games.SoundGame
+import org.squidfish.tuple_n_back.games.modules.GridGame
+import org.squidfish.tuple_n_back.games.modules.SoundGame
 import org.squidfish.tuple_n_back.models.AppEvent
 import org.squidfish.tuple_n_back.models.RecallCheck
-import org.squidfish.tuple_n_back.models.GameSettings
-import org.squidfish.tuple_n_back.models.GameState
-import org.squidfish.tuple_n_back.models.GameType
+import org.squidfish.tuple_n_back.games.GameModule
 import org.squidfish.tuple_n_back.models.GameViewModel
 
 
@@ -132,7 +130,7 @@ fun TimerBar(progress: Float) {
 }
 
 @Composable
-fun RepeatGuessButton(game: GameType, recallCheck: RecallCheck?, onGuess: (game: GameType) -> Unit, modifier: Modifier) {
+fun RepeatGuessButton(game: GameModule, recallCheck: RecallCheck?, onGuess: (game: GameModule) -> Unit, modifier: Modifier) {
     Button(
         modifier = modifier,
         shape = RectangleShape,
@@ -159,15 +157,15 @@ fun RepeatGuessButton(game: GameType, recallCheck: RecallCheck?, onGuess: (game:
 }
 
 @Composable
-fun Games(mnems: Map<GameType, Int>, games: List<GameType>) {
+fun Games(mnems: Map<GameModule, Int>, games: List<GameModule>) {
     games.forEach { game ->
         val mnem: Int = mnems[game] ?: return
 
         when(game) {
-            GameType.Grid -> GridGame(mnem)
-            GameType.Piano -> SoundGame(mnem)
-            GameType.Colour -> TODO()
-            GameType.Vibration -> TODO()
+            GameModule.Grid -> GridGame(mnem)
+            GameModule.Piano -> SoundGame(mnem)
+            GameModule.Colour -> TODO()
+            GameModule.Vibration -> TODO()
         }
     }
 }
@@ -175,9 +173,9 @@ fun Games(mnems: Map<GameType, Int>, games: List<GameType>) {
 @Composable
 fun RepeatGuessButtons(
     modifier: Modifier,
-    recallGuesses: Map<GameType, RecallCheck>,
-    games: List<GameType>,
-    onGuess: (GameType) -> Unit
+    recallGuesses: Map<GameModule, RecallCheck>,
+    games: List<GameModule>,
+    onGuess: (GameModule) -> Unit
 ) {
     games.forEach { game ->
         val recallState: RecallCheck = recallGuesses[game] ?: return

@@ -1,4 +1,4 @@
-package org.squidfish.tuple_n_back.models
+package org.squidfish.tuple_n_back.games.engines
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,8 +9,8 @@ import android.util.Log
 class SoundGameEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsBack, repeatChance) {
     override val gameButtonText = "Sound"
 
-    override fun genNewMnemonic(forbiddem: List<Int?>): Int {
-         return SoundGameEngine.keys.indices.filter { !forbiddem.contains(it) }.random()
+    override fun genNewMnemonic(forbidden: List<Int?>): Int {
+         return keys.indices.filter { !forbidden.contains(it) }.random()
     }
 
     companion object {
@@ -32,8 +32,8 @@ class SoundGameEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsB
             val packageName = context.packageName
             val noteId = context.resources.getIdentifier(keys[resourceId], "raw", packageName)
 
-            if (this.mp == null) {
-                this.mp = MediaPlayer.create(context, noteId).apply {
+            if (mp == null) {
+                mp = MediaPlayer.create(context, noteId).apply {
                     setOnPreparedListener { start() }
                     setOnCompletionListener { reset() }
                 }

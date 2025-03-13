@@ -1,11 +1,10 @@
-package org.squidfish.tuple_n_back.games
+package org.squidfish.tuple_n_back.games.modules
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
-import org.squidfish.tuple_n_back.models.GridPosition
-import org.squidfish.tuple_n_back.models.SoundGameEngine
+import org.squidfish.tuple_n_back.games.engines.SoundGameEngine
 
 @Composable
 fun SoundGame(recordingId: Int) {

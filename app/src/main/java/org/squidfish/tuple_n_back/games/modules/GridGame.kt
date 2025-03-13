@@ -1,4 +1,4 @@
-package org.squidfish.tuple_n_back.games
+package org.squidfish.tuple_n_back.games.modules
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -12,27 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuple_n_back.models.GridPosition
-import org.squidfish.tuple_n_back.models.GridEngine
+import org.squidfish.tuple_n_back.games.engines.GridPosition
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun GridGame(highlightedPosition: Int) {
-    //var manualRecompose by mutableStateOf(false)
-
-    //if (gridViewModel.forceRecomposition) {
-    //    manualRecompose = !manualRecompose
-    //    gridViewModel.forceRecomposition = false
-    //}
+    // TODO: only recompose the GridSquares that need change
 
     Column (
         modifier = Modifier

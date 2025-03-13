@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuple_n_back.models.Game
+import org.squidfish.tuple_n_back.games.Game
 
 @Composable
 fun GameSelectionScreen(onStartGame: (Game) -> Unit) {
@@ -41,6 +41,7 @@ fun GameSelectionScreen(onStartGame: (Game) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Top
         ) {
+            // TODO: use game enum entry to determine uniqueness
             items(games) { game ->
                 // TODO: fetch highestLvl and totalGames
                 GameCard(game, 2, 123) { onStartGame(game) }

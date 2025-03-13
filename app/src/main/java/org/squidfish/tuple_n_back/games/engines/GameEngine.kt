@@ -1,14 +1,11 @@
-package org.squidfish.tuple_n_back.models
+package org.squidfish.tuple_n_back.games.engines
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import org.squidfish.tuple_n_back.NQueue
+import org.squidfish.tuple_n_back.models.GameStats
 import kotlin.random.Random
 
 /**
- * Abstract class for general game behaviour, that is, generating new mnemonics, updating the
+ * Abstract class for common game behaviour, that is, generating new mnemonics, updating the
  * game's state and keeping track of player statistics.
  *
  * @param[recallsBack] Amount of mnemonics the player has to remember.
@@ -16,34 +13,42 @@ import kotlin.random.Random
  * @property[gameButtonText] How the recall button will be named - should be the game's name
  * @property[queue] Collection containing the recallsBack most recent mnemonics.
  * @property[isRepeat] True if there is a mnemonic repeat, that is, the most recent mnemonic is of
- * the same type than the [recallsBack+1] mnemonic.
- * @property[stats] Player performance statistics. See [GameStats] for details.
+ * the same type as the [recallsBack+1] mnemonic.
+ * @property[stats] Player performance statistics.
+ *
+ * @see[GameStats]
  */
 abstract class GameEngine(recallsBack: Int, val repeatChance: Int) {
     private val TAG = "GameEngine"
     abstract val gameButtonText: String
 
     // mnemonic queue
-    private val queue by mutableStateOf(NQueue<Int>(recallsBack))
-    var isRepeat by mutableStateOf(false)
+    private val queue = NQueue<Int>(recallsBack)
+    var isRepeat = false
 
     private var stats = GameStats()
+
+    init {
+        // TODO: verify constructor parameters. recallsBack must be > 1 and repeatChance in [1,100]
+    }
 
     /**
      * Generate a random game mnemonic i.e. game state.
      * @param[forbidden] mnemonics that will not be generated
      * @return integer representing the mnemonic.
+     *
+     * @see[createNewState]
      */
     protected abstract fun genNewMnemonic(forbidden: List<Int?> = listOf()): Int
 
     /**
-     * Should the next generated mnemonic be a repeat
+     * Determine if the next generated mnemonic should be a repeat
      * @return [repeatChance]% chance of returning True
      */
-    protected fun shouldRepeat(): Boolean = Random.Default.nextInt(1, 100) <= repeatChance
+    private fun shouldRepeat(): Boolean = Random.Default.nextInt(1, 100) <= repeatChance
 
     /**
-     * Add a new mnemonic to the game.
+     * Adds a new mnemonic to the mnemonic queue. Sets the [isRepeat] flag if a repeat has occurred.
      */
     fun createNewState(): Int {
         val state : Int
@@ -56,7 +61,7 @@ abstract class GameEngine(recallsBack: Int, val repeatChance: Int) {
                 state = oldestMnem
             } else {
                 isRepeat = false
-                state = genNewMnemonic(listOf( oldestMnem))
+                state = genNewMnemonic(listOf(oldestMnem))
             }
 
         } else {
@@ -68,22 +73,23 @@ abstract class GameEngine(recallsBack: Int, val repeatChance: Int) {
     }
 
     /**
-     * Update player game stats.
+     * Update the player's stats for the module..
      *
-     * @param[recallGuess] true if the player has guessed
+     * @param[recallGuess] true if the player has made a guessed, that is, they thought a mnemonic
+     * repeat happened this round.
      */
     fun updateStats(recallGuess: Boolean) {
-        if (recallGuess && isRepeat) {
+        if (recallGuess && isRepeat) {  // guess on repeat
             stats.correctRecalls++
-        } else if (recallGuess && !isRepeat) {
+        } else if (recallGuess && !isRepeat) {  // guess on non-repeat
             stats.incorrectRecalls++
-        } else if (!recallGuess && isRepeat) {
+        } else if (!recallGuess && isRepeat) {  // no guess on repeat
             stats.missedRecalls++
         }
     }
 
     /**
-     * Get the most recent mnemonic.
+     * Get the most recently added mnemonic.
      *
      * @return integer representing the mnemonic
      */
@@ -94,10 +100,13 @@ abstract class GameEngine(recallsBack: Int, val repeatChance: Int) {
     /**
      * Get player stats.
      *
-     * @return the player's stats for the game
+     * @return the player's stats for the game module
      */
     fun getStats() : GameStats = stats
 
+    /**
+     * Reset the player stats.
+     */
     fun resetStats() {
         stats = GameStats()
     }

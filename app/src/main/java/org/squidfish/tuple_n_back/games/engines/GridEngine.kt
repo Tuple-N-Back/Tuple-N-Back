@@ -1,4 +1,4 @@
-package org.squidfish.tuple_n_back.models
+package org.squidfish.tuple_n_back.games.engines
 
 /**
  * Enum of possible Grid Game states

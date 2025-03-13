@@ -32,10 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.squidfish.tuple_n_back.R
 import org.squidfish.tuple_n_back.models.AppEvent
-import org.squidfish.tuple_n_back.models.Game
-import org.squidfish.tuple_n_back.models.GameSettings
+import org.squidfish.tuple_n_back.games.Game
 import org.squidfish.tuple_n_back.models.GameStats
-import org.squidfish.tuple_n_back.models.GameType
+import org.squidfish.tuple_n_back.games.GameModule
 import org.squidfish.tuple_n_back.models.GameViewModel
 
 
@@ -95,7 +94,7 @@ fun GameSummaryScreen(
 }
 
 @Composable
-fun StatCard(modifier: Modifier, game: GameType, stats: GameStats) {
+fun StatCard(modifier: Modifier, game: GameModule, stats: GameStats) {
     val icon: ImageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground)
     Card (modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
