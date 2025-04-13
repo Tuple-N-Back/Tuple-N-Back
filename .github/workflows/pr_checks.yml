@@ -1,0 +1,33 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run ktlint
+        uses: ScaCap/action-ktlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: gradle
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
