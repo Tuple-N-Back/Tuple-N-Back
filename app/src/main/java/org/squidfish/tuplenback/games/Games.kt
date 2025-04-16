@@ -2,7 +2,7 @@ package org.squidfish.tuplenback.games
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import org.squidfish.tuple_n_back.R
+import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.games.engines.GridEngine
 import org.squidfish.tuplenback.games.engines.SoundGameEngine

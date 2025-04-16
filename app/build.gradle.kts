@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "org.squidfish.tuple_n_back"
+    namespace = "org.squidfish.tuplenback"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "org.squidfish.tuple_n_back"
+        applicationId = "org.squidfish.tuplenback"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

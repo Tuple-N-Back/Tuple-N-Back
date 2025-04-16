@@ -16,7 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlin.system.exitProcess
-import org.squidfish.tuple_n_back.R
+import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.MainActivity
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.models.AppEvent
