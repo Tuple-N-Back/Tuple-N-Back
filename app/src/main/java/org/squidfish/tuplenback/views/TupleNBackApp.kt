@@ -33,7 +33,7 @@ private const val TAG = "TupleNBackApp"
 
 @Composable
 fun TupleNBackApp(
-    gameModel: GameViewModel = viewModel<GameViewModel>(),
+    gameModel: GameViewModel = viewModel(factory = GameViewModel.Factory),
     navController: NavHostController = rememberNavController(),
 ) {
     Scaffold(

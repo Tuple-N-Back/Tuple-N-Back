@@ -1,8 +1,15 @@
 package org.squidfish.tuplenback.models
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.squidfish.tuplenback.data.LocalStorageRepository
+import org.squidfish.tuplenback.data.room.AppDatabase
+import org.squidfish.tuplenback.data.Repository
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
@@ -29,7 +39,7 @@ private const val TAG = "GameViewModel"
  *
  * @see[AppEvent]
  */
-class GameViewModel : ViewModel() {
+class GameViewModel(private val repository: Repository) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
@@ -248,5 +258,21 @@ class GameViewModel : ViewModel() {
         Log.d(TAG, "Ending game")
         timerJob?.cancel()
         super.onCleared()
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val savedStateHandle = createSavedStateHandle()
+                val context = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])?.applicationContext
+
+                if (context == null) {
+                    throw IllegalStateException("Cannot get application")
+                }
+
+                val db: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "app-database").build()
+                GameViewModel(LocalStorageRepository(db))
+            }
+        }
     }
 }

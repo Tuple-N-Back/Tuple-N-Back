@@ -1,5 +1,6 @@
 package org.squidfish.tuplenback.views
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,12 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import org.squidfish.tuplenback.data.FakeRepository
+import org.squidfish.tuplenback.data.LocalStorageRepository
+import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.AppEvent
@@ -155,7 +162,8 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-    val vm = GameViewModel()
+
+    val vm = GameViewModel(FakeRepository())
     vm.game = Game.GridPiano
     vm.onEvent(AppEvent.ResetGameState)
     GameSummaryScreen(vm, {}, {})
