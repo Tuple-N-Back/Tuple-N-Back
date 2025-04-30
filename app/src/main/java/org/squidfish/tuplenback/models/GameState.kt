@@ -11,7 +11,7 @@ import org.squidfish.tuplenback.games.GameModule
  * @property[currentRound] The current round the game is on.
  * @property[mnemonicIds] The recent-most generated mnemonics for each [GameModule].
  * @property[recallCheck] The guesses a user has made this round for each [GameModule].
- * @property[gameStats] The stats for each [GameModule].
+ * @property[gameStatsModel] The stats for each [GameModule].
  * @property[gameOver] flag that signals that the game is over.
  *
  * TODO: mnemonicIds, recallCheck and gameStats should be wrapped in one object, maybe a GameData
@@ -26,7 +26,7 @@ data class GameState(
     val currentRound: Int = 0,
     val mnemonicIds: SnapshotStateMap<GameModule, Int> = mutableStateMapOf(),
     val recallCheck: SnapshotStateMap<GameModule, RecallCheck> = mutableStateMapOf(),
-    val gameStats: SnapshotStateMap<GameModule, GameStats> = mutableStateMapOf(),
+    val gameStatsModel: SnapshotStateMap<GameModule, GameStatsModel> = mutableStateMapOf(),
     val gameOver: Boolean = false,
 )
 

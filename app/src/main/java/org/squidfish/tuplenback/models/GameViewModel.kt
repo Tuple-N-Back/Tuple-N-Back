@@ -1,6 +1,5 @@
 package org.squidfish.tuplenback.models
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.squidfish.tuplenback.data.GameStatsMapper
 import org.squidfish.tuplenback.data.LocalStorageRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.data.Repository
@@ -56,7 +57,7 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
     fun onEvent(event: AppEvent) = when (event) {
         is AppEvent.PlayAgain -> {
             Log.i(TAG, "Playing again")
-            startGame(game)
+            playAgain()
         }
         is AppEvent.ResetGameState -> {
             Log.i(TAG, "Resetting game state")
@@ -73,6 +74,21 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
             startGame(event.game)
+        }
+    }
+
+    /**
+     * Starts the recentmost non-abandoned game
+     */
+    private fun playAgain() {
+        viewModelScope.launch {
+            val prevGame = (repository as LocalStorageRepository).getRecent()?.gameType
+
+            if (prevGame == null) {
+                return@launch
+            }
+
+            startGame(prevGame)
         }
     }
 
@@ -131,11 +147,18 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
 
         verifyGame()
 
+        val gameStartTime = System.currentTimeMillis()
+
         game.modules.forEach { module ->
             _gameState.update {
                 it.apply {
                     it.mnemonicIds[module] = 0
-                    it.gameStats[module] = GameStats()
+                    it.gameStatsModel[module] = GameStatsModel(
+                        gameEndTime = gameStartTime,
+                        gameType = game,
+                        gameModule = module,
+                        difficulty = game.settings.recallsBack
+                    )
                     it.recallCheck[module] = RecallCheck.NONE
                 }
             }
@@ -224,8 +247,33 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
             _gameState.update {
                 it.copy(gameOver = true).apply {
                     gameEngines.forEach { (game, gameEngine) ->
-                        it.gameStats[game] = gameEngine.getStats()
+                        if (gameStatsModel[game] == null) {
+                            throw IllegalStateException("Game and GameStats module discrepancy")
+                        } else {
+                            val stats = gameEngine.getStats()
+                            gameStatsModel[game]?.let { it1 ->
+                                gameStatsModel[game] = it1.copy(
+                                    correctRecalls = stats.correctRecalls,
+                                    incorrectRecalls = stats.incorrectRecalls,
+                                    missedRecalls = stats.missedRecalls,
+                                )
+                            }
+
+                        }
+
+                        val stats = gameEngine.getStats()
+
+
                     }
+                }
+
+            }
+
+            // save stats
+            viewModelScope.launch {
+                for (stats in gameState.value.gameStatsModel) {
+                    (repository as LocalStorageRepository).insert(stats.value)
+
                 }
             }
         } else {
@@ -270,7 +318,9 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
                     throw IllegalStateException("Cannot get application")
                 }
 
-                val db: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "app-database").build()
+                val db: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "app-database")
+                    // .fallbackToDestructiveMigration()
+                    .build()
                 GameViewModel(LocalStorageRepository(db))
             }
         }

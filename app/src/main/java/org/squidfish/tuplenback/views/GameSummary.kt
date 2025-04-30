@@ -1,6 +1,5 @@
 package org.squidfish.tuplenback.views
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,16 +30,11 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
 import org.squidfish.tuplenback.data.FakeRepository
-import org.squidfish.tuplenback.data.LocalStorageRepository
-import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.AppEvent
-import org.squidfish.tuplenback.models.GameStats
+import org.squidfish.tuplenback.models.GameStatsModel
 import org.squidfish.tuplenback.models.GameViewModel
 
 private const val TAG = "GameScreen"
@@ -52,7 +46,7 @@ fun GameSummaryScreen(
     onMainMenu: () -> Unit,
 ) {
     val state by viewModel.gameState.collectAsState()
-    val sortedStats = remember(state.gameStats) { state.gameStats.toSortedMap().entries.toList() }
+    val sortedStats = remember(state.gameStatsModel) { state.gameStatsModel.toSortedMap().entries.toList() }
 
     Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -103,7 +97,7 @@ fun GameSummaryScreen(
 fun StatCard(
     modifier: Modifier,
     game: GameModule,
-    stats: GameStats,
+    stats: GameStatsModel,
 ) {
     Card(
         modifier = modifier,

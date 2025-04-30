@@ -2,7 +2,9 @@ package org.squidfish.tuplenback.games.engines
 
 import kotlin.random.Random
 import org.squidfish.tuplenback.NQueue
-import org.squidfish.tuplenback.models.GameStats
+import org.squidfish.tuplenback.games.Game
+import org.squidfish.tuplenback.games.GameModule
+import org.squidfish.tuplenback.models.GameStatsModel
 
 /**
  * Abstract class for common game behaviour, that is, generating new mnemonics, updating the
@@ -16,7 +18,7 @@ import org.squidfish.tuplenback.models.GameStats
  * the same type as the [recallsBack+1] mnemonic.
  * @property[stats] Player performance statistics.
  *
- * @see[GameStats]
+ * @see[GameStatsModel]
  */
 abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
     abstract val gameButtonText: String
@@ -26,7 +28,10 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
     var isRepeat = false
         private set
 
-    private var stats = GameStats()
+    private var stats = GameStatsModel(
+        difficulty = recallsBack,
+        gameType = Game.None
+    )
 
     init {
         // TODO: verify constructor parameters. recallsBack must be > 1 and repeatChance in [1,100]
@@ -77,9 +82,9 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      */
     fun updateStats(recallGuess: Boolean) {
         when {
-            recallGuess && isRepeat -> stats.correctRecalls++ // guess on repeat
-            recallGuess && !isRepeat -> stats.incorrectRecalls++ // guess on non-repeat
-            !recallGuess && isRepeat -> stats.missedRecalls++ // no guess on repeat
+            recallGuess && isRepeat -> stats = stats.copy(correctRecalls = stats.correctRecalls + 1) // guess on repeat
+            recallGuess && !isRepeat -> stats = stats.copy(incorrectRecalls = stats.incorrectRecalls + 1) // guess on non-repeat
+            !recallGuess && isRepeat -> stats = stats.copy(missedRecalls = stats.missedRecalls + 1) // no guess on repeat
         }
     }
 
@@ -95,12 +100,12 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      *
      * @return the player's stats for the game module
      */
-    fun getStats(): GameStats = stats
+    fun getStats(): GameStatsModel = stats
 
     /**
      * Reset the player stats.
      */
     fun resetStats() {
-        stats = GameStats()
+        stats = GameStatsModel(difficulty = stats.difficulty)
     }
 }

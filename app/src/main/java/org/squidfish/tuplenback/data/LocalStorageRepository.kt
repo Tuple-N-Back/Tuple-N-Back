@@ -1,12 +1,14 @@
 package org.squidfish.tuplenback.data
 
 import org.squidfish.tuplenback.data.room.AppDatabase
-import org.squidfish.tuplenback.data.room.GameStats
-import org.squidfish.tuplenback.data.Repository
+import org.squidfish.tuplenback.data.room.GameStatsData
+import org.squidfish.tuplenback.models.GameStatsModel
 
 class LocalStorageRepository(val db: AppDatabase) : Repository {
-    fun getRecent(): GameStatsEntry? = db.getGameStatsDao().getRecent(1).firstOrNull()
+    suspend fun getRecent(): GameStatsModel? = db.getGameStatsDao().getRecent(1).firstOrNull()?.let {
+        GameStatsMapper.toModel(it)
+    }
 
-    fun insert(stats: GameStatsEntry) = db.getGameStatsDao().insert(stats as GameStats)
-    fun delete(stats: GameStatsEntry) = db.getGameStatsDao().delete(stats as GameStats)
+    suspend fun insert(stats: GameStatsModel) = db.getGameStatsDao().insert(GameStatsMapper.toData(stats))
+    suspend fun delete(stats: GameStatsModel) = db.getGameStatsDao().delete(GameStatsMapper.toData(stats))
 }

@@ -159,6 +159,7 @@ fun Games(mnems: Map<GameModule, Int>, games: List<GameModule>) {
             GameModule.Piano -> SoundGame(mnem)
             GameModule.Colour -> TODO()
             GameModule.Vibration -> TODO()
+            GameModule.None -> throw IllegalArgumentException("A game module is 'None'")
         }
     }
 }
