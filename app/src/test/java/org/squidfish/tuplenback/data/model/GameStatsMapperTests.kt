@@ -18,20 +18,22 @@ class GameStatsMapperTests {
             correctRecalls = 4,
             incorrectRecalls = 5,
             missedRecalls = 6,
+            gameModule = TODO(),
         )
 
         // When
         val modelStats = GameStatsMapper.Companion.toModel(dataStats)
 
         // Then
-        assert(modelStats == GameStatsModel(
-            gameEndTime = 1,
-            gameType = Game.GridPiano,
-            difficulty = 3,
-            correctRecalls = 4,
-            incorrectRecalls = 5,
-            missedRecalls = 6,
-        )
+        assert(
+            modelStats == GameStatsModel(
+                gameEndTime = 1,
+                gameType = Game.GridPiano,
+                difficulty = 3,
+                correctRecalls = 4,
+                incorrectRecalls = 5,
+                missedRecalls = 6,
+            ),
         )
     }
 
@@ -51,15 +53,16 @@ class GameStatsMapperTests {
         val dataStats = GameStatsMapper.Companion.toData(modelStats)
 
         // Then
-        assert(dataStats == GameStatsData(
-            gameEndTime = 1,
-            gameType = Game.GridPiano,
-            difficulty = 3,
-            correctRecalls = 4,
-            incorrectRecalls = 5,
-            missedRecalls = 6,
-        )
+        assert(
+            dataStats == GameStatsData(
+                gameEndTime = 1,
+                gameType = Game.GridPiano,
+                difficulty = 3,
+                correctRecalls = 4,
+                incorrectRecalls = 5,
+                missedRecalls = 6,
+                gameModule = TODO(),
+            ),
         )
     }
-
 }

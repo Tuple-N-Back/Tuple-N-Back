@@ -8,10 +8,8 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.squidfish.tuplenback.data.BaseGameStats
 import org.squidfish.tuplenback.data.LocalStorageRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
-import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.GameStatsModel
@@ -25,7 +23,9 @@ class LocalStorageRepositoryTests {
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         this.db = Room.inMemoryDatabaseBuilder(
-            context, AppDatabase::class.java).allowMainThreadQueries().build()
+            context,
+            AppDatabase::class.java,
+        ).allowMainThreadQueries().build()
         this.rep = LocalStorageRepository(this.db)
     }
 

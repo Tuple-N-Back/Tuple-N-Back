@@ -156,7 +156,6 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-
     val vm = GameViewModel(FakeRepository())
     vm.game = Game.GridPiano
     vm.onEvent(AppEvent.ResetGameState)

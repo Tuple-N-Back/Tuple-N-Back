@@ -18,5 +18,5 @@ data class GameStatsModel(
     override val difficulty: Int,
     override val correctRecalls: Int = 0,
     override val incorrectRecalls: Int = 0,
-    override val missedRecalls: Int = 0
+    override val missedRecalls: Int = 0,
 ) : BaseGameStats

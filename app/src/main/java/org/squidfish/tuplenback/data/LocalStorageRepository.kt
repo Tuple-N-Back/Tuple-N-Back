@@ -1,7 +1,6 @@
 package org.squidfish.tuplenback.data
 
 import org.squidfish.tuplenback.data.room.AppDatabase
-import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.models.GameStatsModel
 
 class LocalStorageRepository(val db: AppDatabase) : Repository {

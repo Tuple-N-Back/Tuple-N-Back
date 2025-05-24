@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.room.Room
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,11 +15,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.squidfish.tuplenback.data.GameStatsMapper
 import org.squidfish.tuplenback.data.LocalStorageRepository
-import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.data.Repository
+import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
@@ -157,7 +154,7 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
                         gameEndTime = gameStartTime,
                         gameType = game,
                         gameModule = module,
-                        difficulty = game.settings.recallsBack
+                        difficulty = game.settings.recallsBack,
                     )
                     it.recallCheck[module] = RecallCheck.NONE
                 }
@@ -258,22 +255,17 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
                                     missedRecalls = stats.missedRecalls,
                                 )
                             }
-
                         }
 
                         val stats = gameEngine.getStats()
-
-
                     }
                 }
-
             }
 
             // save stats
             viewModelScope.launch {
                 for (stats in gameState.value.gameStatsModel) {
                     (repository as LocalStorageRepository).insert(stats.value)
-
                 }
             }
         } else {

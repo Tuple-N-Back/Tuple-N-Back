@@ -3,7 +3,6 @@ package org.squidfish.tuplenback.games.engines
 import kotlin.random.Random
 import org.squidfish.tuplenback.NQueue
 import org.squidfish.tuplenback.games.Game
-import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.GameStatsModel
 
 /**
@@ -30,7 +29,7 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
 
     private var stats = GameStatsModel(
         difficulty = recallsBack,
-        gameType = Game.None
+        gameType = Game.None,
     )
 
     init {
@@ -82,9 +81,14 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      */
     fun updateStats(recallGuess: Boolean) {
         when {
-            recallGuess && isRepeat -> stats = stats.copy(correctRecalls = stats.correctRecalls + 1) // guess on repeat
-            recallGuess && !isRepeat -> stats = stats.copy(incorrectRecalls = stats.incorrectRecalls + 1) // guess on non-repeat
-            !recallGuess && isRepeat -> stats = stats.copy(missedRecalls = stats.missedRecalls + 1) // no guess on repeat
+            // guess on repeat
+            recallGuess && isRepeat -> stats = stats.copy(correctRecalls = stats.correctRecalls + 1)
+
+            // guess on non-repeat
+            recallGuess && !isRepeat -> stats = stats.copy(incorrectRecalls = stats.incorrectRecalls + 1)
+
+            // no guess on repeat
+            !recallGuess && isRepeat -> stats = stats.copy(missedRecalls = stats.missedRecalls + 1)
         }
     }
 

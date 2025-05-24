@@ -16,8 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlin.system.exitProcess
-import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.MainActivity
+import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
@@ -96,14 +96,13 @@ fun TupleNBackApp(
                         navController.navigate(ScreenType.GameSelection.name)
                     },
                     onPlayRecent = {
-
                         if (gameModel.game == Game.None) {
                             Log.w(TAG, "Cannot play recent: No game played previously")
                             return@MainMenuScreen
                         }
 
                         navController.navigate(ScreenType.Game.name)
-                        //gameModel.onEvent(AppEvent.PlayAgain)
+                        // gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},
                     onInfo = {},

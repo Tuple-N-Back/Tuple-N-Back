@@ -14,7 +14,8 @@ interface BaseGameStats {
     val incorrectRecalls: Int
     val missedRecalls: Int
 
-    fun getEndTimeAsString(): String {
-        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss z", Locale.getDefault()).format(gameEndTime)
-    }
+    fun getEndTimeAsString(): String = SimpleDateFormat(
+        "yyyy-MM-dd HH:mm:ss z",
+        Locale.getDefault(),
+    ).format(gameEndTime)
 }
