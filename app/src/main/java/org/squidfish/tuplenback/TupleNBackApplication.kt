@@ -13,7 +13,7 @@ class TupleNBackApplication: Application() {
             androidContext(this@TupleNBackApplication)
             modules(
                 repositoryModule,
-                viewModelModule
+                viewModelModule,
             )
         }
     }
