@@ -16,8 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
-import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.MainActivity
+import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
