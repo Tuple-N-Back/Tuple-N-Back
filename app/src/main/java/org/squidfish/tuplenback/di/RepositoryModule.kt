@@ -1,6 +1,6 @@
 package org.squidfish.tuplenback.di
 
-import org.koin.dsl.module
+import org.koin.core.annotation.Module
 
-val repositoryModule = module {
-}
+@Module
+class RepositoryModule()

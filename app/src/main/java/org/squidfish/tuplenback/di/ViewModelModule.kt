@@ -1,9 +1,11 @@
 package org.squidfish.tuplenback.di
 
-import org.koin.core.module.dsl.viewModelOf
-import org.koin.dsl.module
+import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.Module
 import org.squidfish.tuplenback.models.GameViewModel
 
-val viewModelModule = module {
-    viewModelOf(::GameViewModel)
+@Module
+class ViewModelModule() {
+    @KoinViewModel
+    fun createGameViewModel(): GameViewModel = GameViewModel()
 }
