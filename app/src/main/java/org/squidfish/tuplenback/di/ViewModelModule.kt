@@ -5,7 +5,7 @@ import org.koin.core.annotation.Module
 import org.squidfish.tuplenback.models.GameViewModel
 
 @Module
-class ViewModelModule() {
+class ViewModelModule {
     @KoinViewModel
     fun createGameViewModel(): GameViewModel = GameViewModel()
 }
