@@ -46,6 +46,18 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
     private val gameEngines = mutableMapOf<GameModule, GameEngine>()
     var game: Game = Game.None // TODO: load game played on last session
 
+    init {
+        viewModelScope.launch {
+            val prevGame = (repository as LocalStorageRepository).getRecent()?.gameType
+
+            if (prevGame != null) {
+                game = prevGame
+            }
+
+        }
+    }
+        // (repository as LocalStorageRepository).getRecent()?.gameType ?: Game.None
+
     /**
      * Receive and handle view events
      *

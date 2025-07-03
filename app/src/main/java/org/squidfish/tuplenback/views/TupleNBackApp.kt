@@ -102,7 +102,7 @@ fun TupleNBackApp(
                         }
 
                         navController.navigate(ScreenType.Game.name)
-                        // gameModel.onEvent(AppEvent.PlayAgain)
+                        gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},
                     onInfo = {},

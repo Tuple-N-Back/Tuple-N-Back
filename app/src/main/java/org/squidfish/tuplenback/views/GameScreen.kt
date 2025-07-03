@@ -75,7 +75,7 @@ fun GameScreen(
                 ) {
                     Text(
                         text = "${state.currentRound}/${viewModel.game.settings.totalRounds}",
-                        fontSize = 10.sp,
+                        fontSize = 32.sp,
                     )
                 }
             }
