@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
 import org.squidfish.tuplenback.data.LocalStorageRepository
 import org.squidfish.tuplenback.data.Repository
 import org.squidfish.tuplenback.data.room.AppDatabase
@@ -54,7 +53,6 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
             if (prevGame != null) {
                 game = prevGame
             }
-
         }
     }
 

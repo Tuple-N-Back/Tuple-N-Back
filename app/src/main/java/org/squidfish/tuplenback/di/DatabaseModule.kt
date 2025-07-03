@@ -15,6 +15,6 @@ class DatabaseModule {
     fun createAppDatabase(context: Context): AppDatabase = Room.databaseBuilder(
         context,
         AppDatabase::class.java,
-        "app-database"
+        "app-database",
     ).build()
 }
