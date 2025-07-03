@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -37,7 +38,7 @@ class LocalStorageRepositoryTests {
     }
 
     @Test
-    fun insertSingleGameStats() {
+    fun insertSingleGameStats() = runTest {
         // Given
         val gameStatsModel = GameStatsModel(1, Game.Grid, GameModule.Grid, 4, 5, 1, 2)
 
@@ -49,7 +50,7 @@ class LocalStorageRepositoryTests {
     }
 
     @Test
-    fun getRecentmostInsertedGameStatsOutOf3() {
+    fun getRecentmostInsertedGameStatsOutOf3() = runTest {
         // Given
         val gameStatsDataFirst = GameStatsModel(1, Game.Grid, GameModule.Grid, 1, 2, 3, 4)
         val gameStatsDataLatest = GameStatsModel(3, Game.GridPiano, GameModule.Grid, 5, 6, 7, 8)
@@ -65,12 +66,12 @@ class LocalStorageRepositoryTests {
     }
 
     @Test
-    fun retrieveGameStatsWhenNoneAreInserted() {
+    fun retrieveGameStatsWhenNoneAreInserted() = runTest {
         assert(rep.getRecent() == null)
     }
 
     @Test
-    fun deleteSingleGameStats() {
+    fun deleteSingleGameStats() = runTest {
         // Given
         val gameStatsData = GameStatsModel(1, Game.Grid, GameModule.Grid, 4, 5, 1, 2)
         rep.insert(gameStatsData)

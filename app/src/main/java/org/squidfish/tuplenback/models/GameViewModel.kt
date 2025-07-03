@@ -56,7 +56,6 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
 
         }
     }
-        // (repository as LocalStorageRepository).getRecent()?.gameType ?: Game.None
 
     /**
      * Receive and handle view events

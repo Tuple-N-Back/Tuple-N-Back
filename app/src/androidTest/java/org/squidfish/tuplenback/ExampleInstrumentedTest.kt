@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("org.squidfish.tuple_n_back", appContext.packageName)
+        assertEquals("org.squidfish.tuplenback", appContext.packageName)
     }
 }

@@ -4,6 +4,7 @@ import org.junit.Test
 import org.squidfish.tuplenback.data.GameStatsMapper
 import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.Game
+import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.GameStatsModel
 
 class GameStatsMapperTests {
@@ -18,7 +19,7 @@ class GameStatsMapperTests {
             correctRecalls = 4,
             incorrectRecalls = 5,
             missedRecalls = 6,
-            gameModule = TODO(),
+            gameModule = GameModule.None,
         )
 
         // When
@@ -61,7 +62,7 @@ class GameStatsMapperTests {
                 correctRecalls = 4,
                 incorrectRecalls = 5,
                 missedRecalls = 6,
-                gameModule = TODO(),
+                gameModule = GameModule.None,
             ),
         )
     }
