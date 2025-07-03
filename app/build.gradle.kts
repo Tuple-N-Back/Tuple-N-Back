@@ -1,16 +1,20 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "org.squidfish.tuple_n_back"
-    compileSdk = 34
+    namespace = "org.squidfish.tuplenback"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.squidfish.tuple_n_back"
+        applicationId = "org.squidfish.tuplenback"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -33,9 +37,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
     buildFeatures {
         compose = true
     }
@@ -49,8 +50,18 @@ android {
     }
 }
 
-dependencies {
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+    }
+}
 
+ksp {
+    arg("KOIN_USE_COMPOSE_VIEWMODEL", "true")
+    arg("KOIN_CONFIG_CHECK", "true")
+}
+
+dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,6 +72,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.bundles.koin)
+    api(libs.koin.annotations)
+    ksp(libs.koin.ksp.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
