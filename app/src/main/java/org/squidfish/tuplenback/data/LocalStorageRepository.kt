@@ -1,8 +1,10 @@
 package org.squidfish.tuplenback.data
 
+import org.koin.core.annotation.Single
 import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.models.GameStatsModel
 
+@Single
 class LocalStorageRepository(val db: AppDatabase) : Repository {
     suspend fun getRecent(): GameStatsModel? = db.getGameStatsDao().getRecent(1).firstOrNull()?.let {
         GameStatsMapper.toModel(it)
