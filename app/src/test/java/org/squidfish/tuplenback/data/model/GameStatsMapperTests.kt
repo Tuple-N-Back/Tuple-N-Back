@@ -10,16 +10,16 @@ import org.squidfish.tuplenback.models.GameStatsModel
 class GameStatsMapperTests {
 
     @Test
-    fun convertGameStatsDataToGameStatsModel() {
+    fun `toModel converts GameStatsData to GameStatsModel`() {
         // Given
         val dataStats = GameStatsData(
             gameEndTime = 1,
             gameType = Game.GridPiano,
+            gameModule = GameModule.Grid,
             difficulty = 3,
             correctRecalls = 4,
             incorrectRecalls = 5,
             missedRecalls = 6,
-            gameModule = GameModule.None,
         )
 
         // When
@@ -30,6 +30,7 @@ class GameStatsMapperTests {
             modelStats == GameStatsModel(
                 gameEndTime = 1,
                 gameType = Game.GridPiano,
+                gameModule = GameModule.Grid,
                 difficulty = 3,
                 correctRecalls = 4,
                 incorrectRecalls = 5,
@@ -39,11 +40,12 @@ class GameStatsMapperTests {
     }
 
     @Test
-    fun convertGameStatsModelToGameStatsData() {
+    fun `toData converts GameStatsModel to GameStatsData`() {
         // Given
         val modelStats = GameStatsModel(
             gameEndTime = 1,
             gameType = Game.GridPiano,
+            gameModule = GameModule.Grid,
             difficulty = 3,
             correctRecalls = 4,
             incorrectRecalls = 5,
@@ -58,12 +60,54 @@ class GameStatsMapperTests {
             dataStats == GameStatsData(
                 gameEndTime = 1,
                 gameType = Game.GridPiano,
+                gameModule = GameModule.Grid,
                 difficulty = 3,
                 correctRecalls = 4,
                 incorrectRecalls = 5,
                 missedRecalls = 6,
-                gameModule = GameModule.None,
             ),
         )
+    }
+
+    @Test
+    fun `toData throws an error when given GameStatsModel with null gameModule`() {
+        // Given
+        val modelStats = GameStatsModel(
+            gameEndTime = 1,
+            gameType = Game.GridPiano,
+            gameModule = null,
+            difficulty = 3,
+            correctRecalls = 4,
+            incorrectRecalls = 5,
+            missedRecalls = 6,
+        )
+
+        try {
+            // When
+            GameStatsMapper.Companion.toData(modelStats)
+        } catch (exception: IllegalArgumentException) {
+            assert(true)
+        }
+    }
+
+    @Test
+    fun `toData throws an error when given GameStatsModel with null gameType`() {
+        // Given
+        val modelStats = GameStatsModel(
+            gameEndTime = 1,
+            gameType = null,
+            gameModule = GameModule.Grid,
+            difficulty = 3,
+            correctRecalls = 4,
+            incorrectRecalls = 5,
+            missedRecalls = 6,
+        )
+
+        try {
+            // When
+            GameStatsMapper.Companion.toData(modelStats)
+        } catch (exception: IllegalArgumentException) {
+            assert(true)
+        }
     }
 }
