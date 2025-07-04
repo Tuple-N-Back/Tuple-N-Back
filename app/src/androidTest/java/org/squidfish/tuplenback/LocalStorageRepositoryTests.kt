@@ -13,12 +13,11 @@ import org.squidfish.tuplenback.data.LocalStorageRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.models.GameStatsModel
 
 @RunWith(AndroidJUnit4::class)
 class LocalStorageRepositoryTests {
     private lateinit var db: AppDatabase
-    private lateinit var rep: LocalStorageRepository
+    private lateinit var repository: LocalStorageRepository
 
     @Before
     fun createDb() {
@@ -27,7 +26,7 @@ class LocalStorageRepositoryTests {
             context,
             AppDatabase::class.java,
         ).allowMainThreadQueries().build()
-        this.rep = LocalStorageRepository(this.db)
+        this.repository = LocalStorageRepository(this.db)
     }
 
     @After
@@ -43,10 +42,10 @@ class LocalStorageRepositoryTests {
         val gameStatsModel = GameStatsModel(1, Game.Grid, GameModule.Grid, 4, 5, 1, 2)
 
         // When
-        rep.insert(gameStatsModel)
+        repository.insert(gameStatsModel)
 
         // Then
-        assert(gameStatsModel == rep.getRecent())
+        assert(gameStatsModel == repository.getRecent())
     }
 
     @Test
@@ -57,9 +56,9 @@ class LocalStorageRepositoryTests {
         val gameStatsDataMiddle = GameStatsModel(2, Game.GridPiano, GameModule.Piano, 1, 2, 3, 4)
 
         // When
-        rep.insert(gameStatsDataMiddle)
-        rep.insert(gameStatsDataLatest)
-        rep.insert(gameStatsDataFirst)
+        repository.insert(gameStatsDataMiddle)
+        repository.insert(gameStatsDataLatest)
+        repository.insert(gameStatsDataFirst)
 
         // Then
         assert(gameStatsDataLatest == rep.getRecent())

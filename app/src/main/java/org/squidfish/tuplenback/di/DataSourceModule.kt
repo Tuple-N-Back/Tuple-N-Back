@@ -7,12 +7,12 @@ import org.koin.core.annotation.Single
 import org.squidfish.tuplenback.data.room.AppDatabase
 
 @Module
-class DatabaseModule {
+class DataSourceModule {
 
     @Single
     fun createAppDatabase(context: Context): AppDatabase = Room.databaseBuilder(
         context,
         AppDatabase::class.java,
         "app-database",
-    ).build()
+    ).fallbackToDestructiveMigration(true).build()
 }

@@ -66,7 +66,7 @@ fun TupleNBackApp(
             composable(route = ScreenType.Summary.name) {
                 Log.v(TAG, "Composing ${ScreenType.Summary}")
                 GameSummaryScreen(
-                    state = gameModel.gameState.collectAsState().value,
+                    stats = gameModel.playerStats,
                     onPlayAgain = {
                         navController.navigate(ScreenType.Game.name) {
                             popUpTo(ScreenType.Game.name) { inclusive = true }

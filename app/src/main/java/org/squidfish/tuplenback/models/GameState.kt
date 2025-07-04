@@ -1,8 +1,11 @@
 package org.squidfish.tuplenback.models
 
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
+import org.squidfish.tuplenback.models.PlayerPerformanceStats
 
 /**
  * State of the ongoing game.
@@ -26,8 +29,9 @@ data class GameState(
     val currentRound: Int = 0,
     val mnemonicIds: SnapshotStateMap<GameModule, Int> = mutableStateMapOf(),
     val recallCheck: SnapshotStateMap<GameModule, RecallCheck> = mutableStateMapOf(),
-    val gameStatsModel: SnapshotStateMap<GameModule, GameStatsModel> = mutableStateMapOf(),
+    val playerPerformance: SnapshotStateMap<GameModule, PlayerPerformanceStats> = mutableStateMapOf(),
     val gameOver: Boolean = false,
+    val gameEndTime: Long = System.currentTimeMillis(),
 )
 
 /**

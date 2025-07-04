@@ -2,7 +2,7 @@ package org.squidfish.tuplenback.games.engines
 
 import kotlin.random.Random
 import org.squidfish.tuplenback.NQueue
-import org.squidfish.tuplenback.models.GameStatsModel
+import org.squidfish.tuplenback.models.PlayerPerformanceStats
 
 /**
  * Abstract class for common game behaviour, that is, generating new mnemonics, updating the
@@ -21,14 +21,11 @@ import org.squidfish.tuplenback.models.GameStatsModel
 abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
     abstract val gameButtonText: String
 
-    // mnemonic queue
     private val queue = NQueue<Int>(recallsBack)
     var isRepeat = false
         private set
 
-    private var stats = GameStatsModel(
-        difficulty = recallsBack,
-    )
+    private var stats = PlayerPerformanceStats()
 
     init {
         // TODO: verify constructor parameters. recallsBack must be > 1 and repeatChance in [1,100]
@@ -74,19 +71,22 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
     /**
      * Update the player's stats for the module..
      *
-     * @param[recallGuess] true if the player has made a guessed, that is, they thought a mnemonic
+     * @param[recallGuess] true if the player has made a guess, that is, they thought a mnemonic
      * repeat happened this round.
      */
     fun updateStats(recallGuess: Boolean) {
-        when {
+        stats = when {
             // guess on repeat
-            recallGuess && isRepeat -> stats = stats.copy(correctRecalls = stats.correctRecalls + 1)
+            recallGuess && isRepeat -> stats.copy(correctRecalls = stats.correctRecalls + 1)
 
             // guess on non-repeat
-            recallGuess && !isRepeat -> stats = stats.copy(incorrectRecalls = stats.incorrectRecalls + 1)
+            recallGuess && !isRepeat -> stats.copy(incorrectRecalls = stats.incorrectRecalls + 1)
 
             // no guess on repeat
-            !recallGuess && isRepeat -> stats = stats.copy(missedRecalls = stats.missedRecalls + 1)
+            !recallGuess && isRepeat -> stats.copy(missedRecalls = stats.missedRecalls + 1)
+
+            // no guess on non-repeat
+            else -> stats.copy(correctNonRecalls = stats.correctNonRecalls + 1)
         }
     }
 
@@ -102,12 +102,13 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      *
      * @return the player's stats for the game module
      */
-    fun getStats(): GameStatsModel = stats
+    fun getStats(): PlayerPerformanceStats = stats
 
     /**
      * Reset the player stats.
      */
     fun resetStats() {
-        stats = GameStatsModel(difficulty = stats.difficulty)
+//        stats = GameStatsModel(difficulty = stats.difficulty)
+        stats = PlayerPerformanceStats()
     }
 }

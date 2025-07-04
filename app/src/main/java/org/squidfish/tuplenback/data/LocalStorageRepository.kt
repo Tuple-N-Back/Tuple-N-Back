@@ -1,15 +1,12 @@
 package org.squidfish.tuplenback.data
 
-import org.koin.core.annotation.Single
 import org.squidfish.tuplenback.data.room.AppDatabase
-import org.squidfish.tuplenback.models.GameStatsModel
+import org.squidfish.tuplenback.models.GameData
 
-@Single
-class LocalStorageRepository(val db: AppDatabase) {
-    suspend fun getRecent(): GameStatsModel? = db.getGameStatsDao().getRecent(1).firstOrNull()?.let {
-        GameStatsMapper.toModel(it)
-    }
+class LocalStorageRepository(private val db: AppDatabase) {
 
-    suspend fun insert(stats: GameStatsModel) = db.getGameStatsDao().insert(GameStatsMapper.toData(stats))
-    suspend fun delete(stats: GameStatsModel) = db.getGameStatsDao().delete(GameStatsMapper.toData(stats))
+    suspend fun getRecent(): GameData? = GameStatsMapper.mapper.toModel(db.getGameStatsDao().getRecent(1))
+
+    suspend fun insert(gameData: GameData) = db.getGameStatsDao().insertAll(GameStatsMapper.mapper.toData(gameData))
+    suspend fun delete(gameData: GameData) = db.getGameStatsDao().deleteAll(GameStatsMapper.mapper.toData(gameData))
 }

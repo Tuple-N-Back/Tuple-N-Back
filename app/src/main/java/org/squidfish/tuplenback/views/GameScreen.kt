@@ -33,12 +33,12 @@ import org.squidfish.tuplenback.models.RecallCheck
 
 @Composable
 fun GameScreen(
-    modifier: Modifier,
     onFinnish: () -> Unit,
     onAbort: () -> Unit,
     onGuess: (GameModule) -> Unit,
     state: GameState,
     game: Game,
+    modifier: Modifier = Modifier,
 ) {
     if (state.gameOver) {
         LaunchedEffect(Unit) {
@@ -90,7 +90,7 @@ fun GameScreen(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     recallGuesses = state.recallCheck,
                     games = game.modules,
-                    onGuess = { onGuess(it) },
+                    onGuess = { onGuess },
                 )
             }
         }

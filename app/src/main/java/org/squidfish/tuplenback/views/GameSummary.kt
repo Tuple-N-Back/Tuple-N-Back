@@ -28,20 +28,18 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.models.GameState
-import org.squidfish.tuplenback.models.GameStatsModel
+import org.squidfish.tuplenback.models.PlayerPerformanceStats
 
 private const val TAG = "GameScreen"
 
 @Composable
 fun GameSummaryScreen(
-    state: GameState,
+    stats: Map<GameModule, PlayerPerformanceStats>,
     onPlayAgain: () -> Unit,
     onMainMenu: () -> Unit,
 ) {
-    val sortedStats = remember(state.gameStatsModel) { state.gameStatsModel.toSortedMap().entries.toList() }
+    val sortedStats = remember(stats) { stats.toSortedMap().entries.toList() }
 
     Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -92,7 +90,7 @@ fun GameSummaryScreen(
 fun StatCard(
     modifier: Modifier,
     game: GameModule,
-    stats: GameStatsModel,
+    stats: PlayerPerformanceStats,
 ) {
     Card(
         modifier = modifier,
@@ -121,6 +119,8 @@ fun StatCard(
 
         // Stats
         Column {
+            StatRow("Total Rounds: ", stats.correctRecalls.toString())
+            Spacer(modifier = Modifier.width(12.dp))
             StatRow("Correct", stats.correctRecalls.toString())
             StatRow("Incorrect", stats.incorrectRecalls.toString())
             StatRow("Missed", stats.missedRecalls.toString())
@@ -154,28 +154,22 @@ fun GameSummaryScreenPreview() {
     val currTime = System.currentTimeMillis()
 
     val stats = mutableMapOf(
-        GameModule.Grid to GameStatsModel(
-            gameEndTime = currTime,
-            gameType = Game.GridPiano,
-            gameModule = GameModule.Grid,
-            difficulty = 3,
+        GameModule.Grid to PlayerPerformanceStats(
             correctRecalls = 2,
             incorrectRecalls = 5,
             missedRecalls = 1,
+            correctNonRecalls = 2,
         ),
-        GameModule.Piano to GameStatsModel(
-            gameEndTime = currTime,
-            gameType = Game.GridPiano,
-            gameModule = GameModule.Piano,
-            difficulty = 3,
+        GameModule.Piano to PlayerPerformanceStats(
             correctRecalls = 4,
             incorrectRecalls = 1,
             missedRecalls = 0,
+            correctNonRecalls = 6,
         ),
     )
 
     GameSummaryScreen(
-        GameState(),
+        mapOf<GameModule, PlayerPerformanceStats>(),
         onPlayAgain = {},
         onMainMenu = {},
     )

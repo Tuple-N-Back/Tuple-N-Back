@@ -38,6 +38,10 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
 
     private val gameEngines = mutableMapOf<GameModule, GameEngine>()
     var game: Game? = null
+        private set
+
+    val gameData: GameData? = null
+    var playerStats: Map<GameModule, PlayerPerformanceStats> = mapOf()
 
     init {
         viewModelScope.launch {
@@ -82,11 +86,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
      */
     private fun playAgain() {
         viewModelScope.launch {
-            val prevGame = repository.getRecent()?.gameType
-
-            if (prevGame == null) {
-                return@launch
-            }
+            val prevGame = repository.getRecent()?.gameType ?: return@launch
 
             startGame(prevGame)
         }
@@ -99,6 +99,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         this.game = game
 
         gameEngines.clear()
+        playerStats = mapOf()
         initGameEngines()
         initGameState()
         Log.i(TAG, "Starting game")
@@ -118,7 +119,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
     }
 
     /**
-     * Create a new [GameEngine] for all game modules in [game]. If a [GameEngine] already exists,
+     * Create a new [GameEngine] for each game module in [game]. If a [GameEngine] already exists,
      * it is overwritten.
      */
     private fun initGameEngines() {
@@ -126,7 +127,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
 
         val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
 
-        if (game.modules.isEmpty() == true) {
+        if (game.modules.isEmpty()) {
             throw IllegalArgumentException("No game types set in settings")
         }
 
@@ -149,12 +150,6 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
             _gameState.update {
                 it.apply {
                     it.mnemonicIds[module] = 0
-                    it.gameStatsModel[module] = GameStatsModel(
-                        gameEndTime = gameStartTime,
-                        gameType = game,
-                        gameModule = module,
-                        difficulty = game.settings.recallsBack,
-                    )
                     it.recallCheck[module] = RecallCheck.NONE
                 }
             }
@@ -243,29 +238,37 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         if (_gameState.value.currentRound >= game.settings.totalRounds) {
             _gameState.update {
                 it.copy(gameOver = true).apply {
-                    gameEngines.forEach { (game, gameEngine) ->
-                        if (gameStatsModel[game] == null) {
-                            throw IllegalStateException("Game and GameStats module discrepancy")
-                        }
+                    gameEngines.forEach { (module, gameEngine) ->
+                        playerStats = collectPlayerStats()
+                       // if (playerPerformance[module] == null) {
+                       //     throw IllegalStateException("Game and GameStats module discrepancy")
+                       // }
 
-                        val stats = gameEngine.getStats()
+                       // val stats = gameEngine.getStats()
 
-                        gameStatsModel[game]?.let { it1 ->
-                            gameStatsModel[game] = it1.copy(
-                                correctRecalls = stats.correctRecalls,
-                                incorrectRecalls = stats.incorrectRecalls,
-                                missedRecalls = stats.missedRecalls,
-                            )
-                        }
+                       // playerPerformance[module]?.let { stat ->
+                       //     playerPerformance[module] = stat.copy(
+                       //         correctRecalls = stats.correctRecalls,
+                       //         incorrectRecalls = stats.incorrectRecalls,
+                       //         missedRecalls = stats.missedRecalls,
+                       //         correctNonRecalls = stats.correctNonRecalls
+                       //     )
+                       // }
                     }
                 }
             }
 
             // save stats
             viewModelScope.launch {
-                for (stats in gameState.value.gameStatsModel) {
-                    (repository as LocalStorageRepository).insert(stats.value)
-                }
+                repository.insert(GameData(
+                    gameType = game,
+                    gameSettings = game.settings,
+                    playerStats = TODO(),
+                    gameEndTime = TODO()
+                ))
+                //for (stats in gameState.value.gameStatsModel) {
+                    //repository.insert(stats.value)
+                //}
             }
         } else {
             startNewRound()
@@ -286,4 +289,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         timerJob?.cancel()
         super.onCleared()
     }
+
+    private fun collectPlayerStats(): Map<GameModule, PlayerPerformanceStats> =
+        gameEngines.mapValues { (_, engine) -> engine.getStats() }
 }
