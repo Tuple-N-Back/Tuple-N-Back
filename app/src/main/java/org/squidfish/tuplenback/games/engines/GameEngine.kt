@@ -2,7 +2,6 @@ package org.squidfish.tuplenback.games.engines
 
 import kotlin.random.Random
 import org.squidfish.tuplenback.NQueue
-import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.models.GameStatsModel
 
 /**
@@ -29,7 +28,6 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
 
     private var stats = GameStatsModel(
         difficulty = recallsBack,
-        gameType = Game.None,
     )
 
     init {

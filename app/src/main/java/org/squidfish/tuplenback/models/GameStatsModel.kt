@@ -13,8 +13,8 @@ import org.squidfish.tuplenback.games.GameModule
  */
 data class GameStatsModel(
     override val gameEndTime: Long = System.currentTimeMillis(),
-    override val gameType: Game = Game.None,
-    override val gameModule: GameModule = GameModule.None,
+    override val gameType: Game? = null,
+    override val gameModule: GameModule? = null,
     override val difficulty: Int,
     override val correctRecalls: Int = 0,
     override val incorrectRecalls: Int = 0,

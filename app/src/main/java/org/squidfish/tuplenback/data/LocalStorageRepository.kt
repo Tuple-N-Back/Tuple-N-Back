@@ -5,7 +5,7 @@ import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.models.GameStatsModel
 
 @Single
-class LocalStorageRepository(val db: AppDatabase) : Repository {
+class LocalStorageRepository(val db: AppDatabase) {
     suspend fun getRecent(): GameStatsModel? = db.getGameStatsDao().getRecent(1).firstOrNull()?.let {
         GameStatsMapper.toModel(it)
     }

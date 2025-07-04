@@ -2,12 +2,7 @@ package org.squidfish.tuplenback.models
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.room.Room
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.squidfish.tuplenback.data.LocalStorageRepository
-import org.squidfish.tuplenback.data.Repository
-import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
@@ -37,18 +30,18 @@ private const val TAG = "GameViewModel"
  *
  * @see[AppEvent]
  */
-class GameViewModel(private val repository: Repository) : ViewModel() {
+class GameViewModel(private val repository: LocalStorageRepository) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var timerJob: Job? = null
 
     private val gameEngines = mutableMapOf<GameModule, GameEngine>()
-    var game: Game = Game.None // TODO: load game played on last session
+    var game: Game? = null
 
     init {
         viewModelScope.launch {
-            val prevGame = (repository as LocalStorageRepository).getRecent()?.gameType
+            val prevGame = repository.getRecent()?.gameType
 
             if (prevGame != null) {
                 game = prevGame
@@ -89,7 +82,7 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
      */
     private fun playAgain() {
         viewModelScope.launch {
-            val prevGame = (repository as LocalStorageRepository).getRecent()?.gameType
+            val prevGame = repository.getRecent()?.gameType
 
             if (prevGame == null) {
                 return@launch
@@ -104,7 +97,6 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
      */
     private fun startGame(game: Game) {
         this.game = game
-        verifyGame()
 
         gameEngines.clear()
         initGameEngines()
@@ -118,9 +110,6 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
      * engines.
      */
     private fun resetGameState() {
-        verifyGame()
-
-        // TODO: this for PlayAgain?
         gameEngines.forEach { (_, engine) ->
             engine.resetStats()
         }
@@ -135,9 +124,9 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
     private fun initGameEngines() {
         Log.i(TAG, "Initializing game engines")
 
-        verifyGame()
+        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
 
-        if (game.modules.isEmpty()) {
+        if (game.modules.isEmpty() == true) {
             throw IllegalArgumentException("No game types set in settings")
         }
 
@@ -152,7 +141,7 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
     private fun initGameState() {
         Log.i(TAG, "Initializing game state")
 
-        verifyGame()
+        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
 
         val gameStartTime = System.currentTimeMillis()
 
@@ -213,7 +202,7 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
             _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
         }
 
-        verifyGame()
+        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
@@ -248,7 +237,8 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
             }
         }
 
-        verifyGame()
+        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
+
         // end round or end game and get stats
         if (_gameState.value.currentRound >= game.settings.totalRounds) {
             _gameState.update {
@@ -256,18 +246,17 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
                     gameEngines.forEach { (game, gameEngine) ->
                         if (gameStatsModel[game] == null) {
                             throw IllegalStateException("Game and GameStats module discrepancy")
-                        } else {
-                            val stats = gameEngine.getStats()
-                            gameStatsModel[game]?.let { it1 ->
-                                gameStatsModel[game] = it1.copy(
-                                    correctRecalls = stats.correctRecalls,
-                                    incorrectRecalls = stats.incorrectRecalls,
-                                    missedRecalls = stats.missedRecalls,
-                                )
-                            }
                         }
 
                         val stats = gameEngine.getStats()
+
+                        gameStatsModel[game]?.let { it1 ->
+                            gameStatsModel[game] = it1.copy(
+                                correctRecalls = stats.correctRecalls,
+                                incorrectRecalls = stats.incorrectRecalls,
+                                missedRecalls = stats.missedRecalls,
+                            )
+                        }
                     }
                 }
             }
@@ -292,39 +281,9 @@ class GameViewModel(private val repository: Repository) : ViewModel() {
         timerJob?.cancel()
     }
 
-    /**
-     * Check if game is set i.e. is not Game.None. If not, log and throw an exception
-     *
-     * TODO: move away from using it -unnecessarily- in every function
-     */
-    private fun verifyGame() {
-        if (game == Game.None) {
-            Log.e(TAG, "Cannot reset game state - game is not set")
-            throw IllegalStateException("Game is not set")
-        }
-    }
-
     override fun onCleared() {
         Log.d(TAG, "Ending game")
         timerJob?.cancel()
         super.onCleared()
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val savedStateHandle = createSavedStateHandle()
-                val context = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])?.applicationContext
-
-                if (context == null) {
-                    throw IllegalStateException("Cannot get application")
-                }
-
-                val db: AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, "app-database")
-                    // .fallbackToDestructiveMigration()
-                    .build()
-                GameViewModel(LocalStorageRepository(db))
-            }
-        }
     }
 }

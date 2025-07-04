@@ -19,8 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,22 +28,19 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuplenback.data.FakeRepository
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.models.AppEvent
+import org.squidfish.tuplenback.models.GameState
 import org.squidfish.tuplenback.models.GameStatsModel
-import org.squidfish.tuplenback.models.GameViewModel
 
 private const val TAG = "GameScreen"
 
 @Composable
 fun GameSummaryScreen(
-    viewModel: GameViewModel,
+    state: GameState,
     onPlayAgain: () -> Unit,
     onMainMenu: () -> Unit,
 ) {
-    val state by viewModel.gameState.collectAsState()
     val sortedStats = remember(state.gameStatsModel) { state.gameStatsModel.toSortedMap().entries.toList() }
 
     Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
@@ -156,8 +151,32 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-    val vm = GameViewModel(FakeRepository())
-    vm.game = Game.GridPiano
-    vm.onEvent(AppEvent.ResetGameState)
-    GameSummaryScreen(vm, {}, {})
+    val currTime = System.currentTimeMillis()
+
+    val stats = mutableMapOf(
+        GameModule.Grid to GameStatsModel(
+            gameEndTime = currTime,
+            gameType = Game.GridPiano,
+            gameModule = GameModule.Grid,
+            difficulty = 3,
+            correctRecalls = 2,
+            incorrectRecalls = 5,
+            missedRecalls = 1,
+        ),
+        GameModule.Piano to GameStatsModel(
+            gameEndTime = currTime,
+            gameType = Game.GridPiano,
+            gameModule = GameModule.Piano,
+            difficulty = 3,
+            correctRecalls = 4,
+            incorrectRecalls = 1,
+            missedRecalls = 0,
+        ),
+    )
+
+    GameSummaryScreen(
+        GameState(),
+        onPlayAgain = {},
+        onMainMenu = {},
+    )
 }

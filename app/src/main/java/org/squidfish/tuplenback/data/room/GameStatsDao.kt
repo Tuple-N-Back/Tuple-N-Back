@@ -9,17 +9,21 @@ import org.squidfish.tuplenback.games.Game
 @Dao
 interface GameStatsDao {
     @Query(
-        "SELECT * FROM gamestatsdata" +
-            " WHERE gameType = :gameType" +
-            " ORDER BY gameEndTime DESC" +
-            " LIMIT :amount",
+        """
+        SELECT * FROM gamestatsdata
+        WHERE gameType = :gameType
+        ORDER BY gameEndTime DESC
+        LIMIT :amount
+    """,
     )
     suspend fun getByGameType(amount: Int, gameType: Game): List<GameStatsData>
 
     @Query(
-        "SELECT * FROM gamestatsdata" +
-            " ORDER BY gameEndTime DESC" +
-            " LIMIT :amount",
+        """
+        SELECT * FROM gamestatsdata
+        ORDER BY gameEndTime DESC
+        LIMIT :amount
+    """,
     )
     suspend fun getRecent(amount: Int): List<GameStatsData>
 

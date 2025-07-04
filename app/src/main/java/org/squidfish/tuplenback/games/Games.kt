@@ -18,7 +18,6 @@ import org.squidfish.tuplenback.games.engines.SoundGameEngine
  * @see[GameSettings]
  */
 enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
-    None(emptyList(), GameSettings(0, 0, 0, 0)),
     GridPiano(listOf(GameModule.Grid, GameModule.Piano), GameSettings(2, 3, 1500, 15)),
     Grid(listOf(GameModule.Grid), GameSettings(2, 3, 1500, 20)),
 }
@@ -30,7 +29,6 @@ enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
  * @see[GameEngine]
  */
 enum class GameModule(@StringRes val type: Int) {
-    None(-1),
     Grid(R.string.grid_game),
     Piano(R.string.sound_game),
     Colour(R.string.colour_game),
@@ -47,7 +45,6 @@ enum class GameModule(@StringRes val type: Int) {
         Piano -> SoundGameEngine(recallsBack, repeatChance)
         Colour -> TODO()
         Vibration -> TODO()
-        None -> throw IllegalAccessError("Game module is None")
     }
 
     /**
@@ -63,6 +60,5 @@ enum class GameModule(@StringRes val type: Int) {
         Piano -> R.drawable.piano_game_icon
         Colour -> TODO()
         Vibration -> TODO()
-        None -> throw IllegalAccessError("Game module is None")
     }
 }

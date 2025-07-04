@@ -7,8 +7,8 @@ import org.squidfish.tuplenback.games.GameModule
 
 interface BaseGameStats {
     val gameEndTime: Long
-    val gameType: Game
-    val gameModule: GameModule
+    val gameType: Game?
+    val gameModule: GameModule?
     val difficulty: Int
     val correctRecalls: Int
     val incorrectRecalls: Int
