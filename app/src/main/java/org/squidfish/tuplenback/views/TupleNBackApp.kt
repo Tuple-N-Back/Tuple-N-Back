@@ -21,6 +21,7 @@ import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
+import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionScreen
 
 enum class ScreenType(@StringRes val title: Int) {
     GameSelection(R.string.game_selection_screen_name),
@@ -84,10 +85,10 @@ fun TupleNBackApp(
 
             composable(route = ScreenType.GameSelection.name) {
                 Log.v(TAG, "Composing ${ScreenType.GameSelection}")
-                GameSelectionScreen(onStartGame = { game: Game ->
-                    navController.navigate(ScreenType.Game.name)
-                    gameModel.onEvent(AppEvent.StartGame(game))
-                })
+                GameSelectionScreen(
+                    viewModel = koinViewModel(),
+                    navController = navController,
+                )
             }
 
             composable(route = ScreenType.MainMenu.name) {

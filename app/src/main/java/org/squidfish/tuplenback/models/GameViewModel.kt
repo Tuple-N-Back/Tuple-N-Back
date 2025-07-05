@@ -60,10 +60,6 @@ class GameViewModel : ViewModel() {
             Log.i(TAG, "Aborting game")
             abortGame()
         }
-        is AppEvent.StartGame -> {
-            Log.i(TAG, "Starting game: $event.game")
-            startGame(event.game)
-        }
     }
 
     /**

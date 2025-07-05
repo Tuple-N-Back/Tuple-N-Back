@@ -17,13 +17,6 @@ sealed interface AppEvent {
     data object AbortOngoingGame: AppEvent
 
     /**
-     * Start a new game.
-     *
-     * @param[game] the [Game] to start
-     */
-    data class StartGame(val game: Game): AppEvent
-
-    /**
      * Mak a guess, suggesting a mnemonic repeat happened for a game module.
      *
      * @param[gameMod] the game module that is guessed on.

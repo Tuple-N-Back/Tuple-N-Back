@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import org.squidfish.tuplenback.ui.theme.TupleNbackTheme
+import org.squidfish.tuplenback.ui.theme.TupleNBackTheme
 import org.squidfish.tuplenback.views.TupleNBackApp
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            TupleNbackTheme {
+            TupleNBackTheme {
                 TupleNBackApp()
             }
         }
