@@ -6,16 +6,9 @@ import org.squidfish.tuplenback.games.GameModule
 
 @Entity(primaryKeys = ["gameEndTime", "gameModule"])
 data class GameStatsData(
-    // Game Type
     val gameType: Game,
     val gameModule: GameModule,
-
-    // Game Settings
-    val difficulty: Int,
-    val millisecondsPerRound: Long,
-    val mnemonicRepeatChance: Int,
-
-    // Stats
+    val level: Int,
     val correctRecalls: Int,
     val incorrectRecalls: Int,
     val missedRecalls: Int,

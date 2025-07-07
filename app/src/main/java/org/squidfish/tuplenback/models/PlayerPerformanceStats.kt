@@ -8,7 +8,7 @@ package org.squidfish.tuplenback.models
  * @param[missedRecalls] The times a mnemonic repeat happened, but the player didn't signal it.
  * @param[correctNonRecalls] The times a mnemonic repeat didn't happen and the player didn't signal it.
  */
-data class PlayerPerformanceStats (
+data class PlayerPerformanceStats(
     val correctRecalls: Int = 0,
     val incorrectRecalls: Int = 0,
     val missedRecalls: Int = 0,

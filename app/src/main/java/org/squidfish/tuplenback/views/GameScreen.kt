@@ -1,6 +1,5 @@
 package org.squidfish.tuplenback.views
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,7 +89,7 @@ fun GameScreen(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     recallGuesses = state.recallCheck,
                     games = game.modules,
-                    onGuess = { onGuess },
+                    onGuess = { onGuess(it) },
                 )
             }
         }
@@ -123,7 +122,7 @@ fun TimerBar(progress: Float) {
 @Composable
 fun RepeatGuessButton(
     game: GameModule,
-    recallCheck: RecallCheck?,
+    recallCheck: RecallCheck,
     onGuess: (game: GameModule) -> Unit,
     modifier: Modifier,
 ) {
@@ -135,10 +134,6 @@ fun RepeatGuessButton(
             RecallCheck.CORRECT -> buttonColors(Color.Green)
             RecallCheck.INCORRECT -> buttonColors(Color.Red)
             RecallCheck.NONE -> buttonColors()
-            null -> {
-                Log.wtf("RepeatGuessButton", "RecallCheck is null")
-                return
-            }
         },
     ) {
         Text("$game")
@@ -172,7 +167,7 @@ fun RepeatGuessButtons(
         RepeatGuessButton(
             game = game,
             recallCheck = recallState,
-            onGuess = { onGuess(it) },
+            onGuess = { onGuess(game) },
             modifier = modifier,
         )
 

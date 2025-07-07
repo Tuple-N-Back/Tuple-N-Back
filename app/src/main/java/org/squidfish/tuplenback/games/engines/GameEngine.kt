@@ -16,7 +16,6 @@ import org.squidfish.tuplenback.models.PlayerPerformanceStats
  * the same type as the [recallsBack+1] mnemonic.
  * @property[stats] Player performance statistics.
  *
- * @see[GameStatsModel]
  */
 abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
     abstract val gameButtonText: String
@@ -108,7 +107,6 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      * Reset the player stats.
      */
     fun resetStats() {
-//        stats = GameStatsModel(difficulty = stats.difficulty)
         stats = PlayerPerformanceStats()
     }
 }

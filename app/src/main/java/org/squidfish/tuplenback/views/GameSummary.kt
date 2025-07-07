@@ -119,8 +119,7 @@ fun StatCard(
 
         // Stats
         Column {
-            StatRow("Total Rounds: ", stats.correctRecalls.toString())
-            Spacer(modifier = Modifier.width(12.dp))
+            StatRow("Total ", stats.getCurrentRound().toString())
             StatRow("Correct", stats.correctRecalls.toString())
             StatRow("Incorrect", stats.incorrectRecalls.toString())
             StatRow("Missed", stats.missedRecalls.toString())
@@ -151,8 +150,6 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-    val currTime = System.currentTimeMillis()
-
     val stats = mutableMapOf(
         GameModule.Grid to PlayerPerformanceStats(
             correctRecalls = 2,
@@ -169,7 +166,7 @@ fun GameSummaryScreenPreview() {
     )
 
     GameSummaryScreen(
-        mapOf<GameModule, PlayerPerformanceStats>(),
+        stats,
         onPlayAgain = {},
         onMainMenu = {},
     )

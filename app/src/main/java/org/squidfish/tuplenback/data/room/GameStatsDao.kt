@@ -18,24 +18,21 @@ interface GameStatsDao {
     )
     suspend fun getByGameType(amount: Int, gameType: Game): List<GameStatsData>
 
-    //@Query("""
-    //    SELECT * FROM gamestatsdata
-    //    ORDER BY gameEndTime DESC
-    //    LIMIT :amount
-    //""")asd
-    @Query("""
+    @Query(
+        """
         SELECT * FROM gamestatsdata AS a
         INNER JOIN (
             SELECT DISTINCT gameEndTime FROM gamestatsdata
             ORDER BY gameEndTime DESC
             LIMIT :amount) AS b
             ON  a.gameEndTime = b.gameEndTime
-    """)
+    """,
+    )
     suspend fun getRecent(amount: Int): List<GameStatsData>
 
     @Insert
     suspend fun insertAll(gameStatsData: List<GameStatsData>)
 
     @Delete
-    suspend fun deleteAll(vararg gameStatEntries: List<GameStatsData>)
+    suspend fun deleteAll(gameStatEntries: List<GameStatsData>)
 }

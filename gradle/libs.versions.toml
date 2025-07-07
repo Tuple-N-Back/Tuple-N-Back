@@ -12,10 +12,11 @@ navigationRuntimeKtx = "2.9.1"
 navigationCompose = "2.9.1"
 roomVersion = "2.7.2"
 coreKtxVersion = "1.6.1"
-junitKtx = "1.2.1"
 ksp = "2.2.0-2.0.2"
 koin = "4.1.0"
 koin-annotations = "2.1.0"
+robolectric = "4.15.1"
+kotlinx-coroutines = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,8 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-ktx = { module = "androidx.room:room-ktx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric"}
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines"}
 
 [bundles]
 koin = [ "koin-core", "koin-android", "koin-androidx-compose" ]

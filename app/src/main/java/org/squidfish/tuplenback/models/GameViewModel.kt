@@ -10,10 +10,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.squidfish.tuplenback.data.LocalStorageRepository
+import org.squidfish.tuplenback.data.game.LocalStorageRepository
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
+import org.squidfish.tuplenback.utils.Error
+import org.squidfish.tuplenback.utils.MissingGameModules
+import org.squidfish.tuplenback.utils.Result
+import org.squidfish.tuplenback.utils.UnsetGame
+import org.squidfish.tuplenback.utils.onError
+import org.squidfish.tuplenback.utils.onSuccess
 
 private const val TAG = "GameViewModel"
 
@@ -27,6 +33,7 @@ private const val TAG = "GameViewModel"
  * @property[timerJob] Timer, used to count when a round will end in a game.
  * @property[gameEngines] List of game engines for the current [Game].
  * @property[game] The type of [Game] that is being played.
+ * @property[playerStats] [PlayerPerformanceStats] for each [GameModule] in the current game
  *
  * @see[AppEvent]
  */
@@ -40,15 +47,15 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
     var game: Game? = null
         private set
 
-    val gameData: GameData? = null
     var playerStats: Map<GameModule, PlayerPerformanceStats> = mapOf()
 
     init {
         viewModelScope.launch {
-            val prevGame = repository.getRecent()?.gameType
 
-            if (prevGame != null) {
-                game = prevGame
+            repository.getRecent().onSuccess {
+                it?.gameType?.let { prevGame -> game = prevGame }
+            }.onError {
+                Log.e(TAG, "Cannot initialize ViewModel. Repository error: $it")
             }
         }
     }
@@ -69,7 +76,9 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         }
         is AppEvent.MakeMnemonicRepeatGuess -> {
             Log.i(TAG, "Handling button guess")
-            handleGuess(event.gameMod)
+            handleGuess(event.gameMod).onError {
+                Log.e(TAG, it.toString())
+            }
         }
         is AppEvent.AbortOngoingGame -> {
             Log.i(TAG, "Aborting game")
@@ -77,7 +86,9 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
-            startGame(event.game)
+            startGame(event.game).onError {
+                Log.e(TAG, it.toString())
+            }
         }
     }
 
@@ -86,24 +97,34 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
      */
     private fun playAgain() {
         viewModelScope.launch {
-            val prevGame = repository.getRecent()?.gameType ?: return@launch
+            repository.getRecent().onSuccess {
+                if (it == null) {
+                    return@launch
+                }
 
-            startGame(prevGame)
+                startGame(it.gameType)
+            }.onError {
+                Log.e(TAG, "Cannot play again. Repository error: $it")
+            }
         }
     }
 
     /**
      * Starts a new game. Also handles all necessary initialization
      */
-    private fun startGame(game: Game) {
+    private fun startGame(game: Game): Result<Unit, Error> {
         this.game = game
 
         gameEngines.clear()
         playerStats = mapOf()
-        initGameEngines()
-        initGameState()
+
+        initGameEngines().onError { return Result.Error(it) }
+        initGameState().onError { return Result.Error(it) }
+
         Log.i(TAG, "Starting game")
-        startNewRound()
+        startNewRound().onError { return Result.Error(it) }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -122,29 +143,29 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
      * Create a new [GameEngine] for each game module in [game]. If a [GameEngine] already exists,
      * it is overwritten.
      */
-    private fun initGameEngines() {
+    private fun initGameEngines(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game engines")
 
-        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
+        val game = game ?: return Result.Error(UnsetGame)
 
         if (game.modules.isEmpty()) {
-            throw IllegalArgumentException("No game types set in settings")
+            return Result.Error(MissingGameModules)
         }
 
         game.modules.forEach {
             gameEngines[it] = it.toGameEngine(game.settings.recallsBack, game.settings.repeatChance)
         }
+
+        return Result.Success(Unit)
     }
 
     /**
      * Set the correct game module information to the [gameState].
      */
-    private fun initGameState() {
+    private fun initGameState(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game state")
 
-        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
-
-        val gameStartTime = System.currentTimeMillis()
+        val game = game ?: return Result.Error(UnsetGame)
 
         game.modules.forEach { module ->
             _gameState.update {
@@ -154,6 +175,8 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
                 }
             }
         }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -165,12 +188,12 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
      * @param[game] the game module the guess is made towards.
      *
      */
-    private fun handleGuess(game: GameModule) {
+    private fun handleGuess(game: GameModule): Result<Unit, Error> {
         Log.d(TAG, "$game Button pressed")
 
         if (gameEngines[game] == null) {
             Log.e(TAG, "$game is not part of the loaded game engines")
-            return
+            return Result.Error(MissingGameModules)
         }
 
         gameEngines[game]?.updateStats(true)
@@ -180,6 +203,8 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
                     if (gameEngines[game]?.isRepeat == true) RecallCheck.CORRECT else RecallCheck.INCORRECT
             }
         }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -188,7 +213,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
      *
      * @see [GameEngine.createNewState]
      */
-    private fun startNewRound() {
+    private fun startNewRound(): Result<Unit, Error> {
         Log.d(TAG, "Starting new round")
         _gameState.update { it.copy(currentRound = it.currentRound + 1) }
 
@@ -197,7 +222,7 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
             _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
         }
 
-        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
+        val game = game ?: return Result.Error(UnsetGame)
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
@@ -211,13 +236,15 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
 
             endRound()
         }
+
+        return Result.Success(Unit)
     }
 
     /**
      * Ends round, i.e, stops the round timer, increments the round counter and resets the recall
      * check state. On game end, adds stats to the [GameState].
      */
-    private fun endRound() {
+    private fun endRound(): Result<Unit, Error> {
         Log.d(TAG, "Ending round")
 
         // stop timer
@@ -232,47 +259,31 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
             }
         }
 
-        val game = requireNotNull(game) { throw IllegalStateException("Game cannot be null") }
+        val game = game ?: return Result.Error(UnsetGame)
 
         // end round or end game and get stats
         if (_gameState.value.currentRound >= game.settings.totalRounds) {
+            playerStats = collectPlayerStats()
             _gameState.update {
-                it.copy(gameOver = true).apply {
-                    gameEngines.forEach { (module, gameEngine) ->
-                        playerStats = collectPlayerStats()
-                       // if (playerPerformance[module] == null) {
-                       //     throw IllegalStateException("Game and GameStats module discrepancy")
-                       // }
-
-                       // val stats = gameEngine.getStats()
-
-                       // playerPerformance[module]?.let { stat ->
-                       //     playerPerformance[module] = stat.copy(
-                       //         correctRecalls = stats.correctRecalls,
-                       //         incorrectRecalls = stats.incorrectRecalls,
-                       //         missedRecalls = stats.missedRecalls,
-                       //         correctNonRecalls = stats.correctNonRecalls
-                       //     )
-                       // }
-                    }
-                }
+                it.copy(gameOver = true)
             }
 
             // save stats
             viewModelScope.launch {
-                repository.insert(GameData(
-                    gameType = game,
-                    gameSettings = game.settings,
-                    playerStats = TODO(),
-                    gameEndTime = TODO()
-                ))
-                //for (stats in gameState.value.gameStatsModel) {
-                    //repository.insert(stats.value)
-                //}
+                repository.insert(
+                    GameModel(
+                        gameType = game,
+                        gameSettings = game.settings,
+                        playerStats = playerStats,
+                        gameEndTime = System.currentTimeMillis(),
+                    ),
+                )
             }
         } else {
             startNewRound()
         }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -290,6 +301,9 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         super.onCleared()
     }
 
+    /**
+     * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
+     */
     private fun collectPlayerStats(): Map<GameModule, PlayerPerformanceStats> =
         gameEngines.mapValues { (_, engine) -> engine.getStats() }
 }
