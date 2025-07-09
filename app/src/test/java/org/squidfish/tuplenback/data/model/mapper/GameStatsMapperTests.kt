@@ -8,9 +8,8 @@ import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.GameSettings
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.PlayerPerformanceStats
-import org.squidfish.tuplenback.utils.InconsistentGameStats
-import org.squidfish.tuplenback.utils.MissingGameStats
 import org.squidfish.tuplenback.utils.Result
+import org.squidfish.tuplenback.utils.ValidationError
 import org.squidfish.tuplenback.utils.data
 
 class GameStatsMapperTests {
@@ -84,7 +83,7 @@ class GameStatsMapperTests {
         val modelStats = dataStats.asGameModel
 
         // Then
-        assert(modelStats == Result.Error(MissingGameStats))
+        assert(modelStats == Result.Error(ValidationError.MissingGameStats))
     }
 
     @Test
@@ -118,7 +117,7 @@ class GameStatsMapperTests {
 
         // Then
         assert(
-            modelStats == Result.Error(InconsistentGameStats),
+            modelStats == Result.Error(ValidationError.InconsistentGameStats),
         )
     }
 }

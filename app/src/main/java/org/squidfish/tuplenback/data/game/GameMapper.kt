@@ -5,14 +5,12 @@ import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.PlayerPerformanceStats
 import org.squidfish.tuplenback.utils.Error
-import org.squidfish.tuplenback.utils.InconsistentGameData
-import org.squidfish.tuplenback.utils.InconsistentGameStats
-import org.squidfish.tuplenback.utils.MissingGameStats
 import org.squidfish.tuplenback.utils.Result
+import org.squidfish.tuplenback.utils.ValidationError
 
 val List<GameStatsData>.asGameModel: Result<GameModel, Error>
     get() {
-        val first = firstOrNull() ?: return Result.Error(MissingGameStats)
+        val first = firstOrNull() ?: return Result.Error(ValidationError.MissingGameStats)
 
         forEach { entry ->
             if (
@@ -20,7 +18,7 @@ val List<GameStatsData>.asGameModel: Result<GameModel, Error>
                 entry.gameEndTime != first.gameEndTime ||
                 entry.level != first.level
             ) {
-                return Result.Error(InconsistentGameStats)
+                return Result.Error(ValidationError.InconsistentGameStats)
             }
         }
 
@@ -52,7 +50,7 @@ val List<GameStatsData>.asGameModel: Result<GameModel, Error>
 val GameModel.asGameStatsData: Result<List<GameStatsData>, Error>
     get() {
         if (gameType.modules.size != playerStats.size) {
-            return Result.Error(InconsistentGameData)
+            return Result.Error(ValidationError.InconsistentGameData)
         }
 
         val gameStats = gameType.modules.map { module ->
@@ -60,11 +58,17 @@ val GameModel.asGameStatsData: Result<List<GameStatsData>, Error>
                 gameType = gameType,
                 gameModule = module,
                 level = level,
-                correctRecalls = playerStats[module]?.correctRecalls ?: return Result.Error(InconsistentGameData),
-                incorrectRecalls = playerStats[module]?.incorrectRecalls ?: return Result.Error(InconsistentGameData),
-                missedRecalls = playerStats[module]?.missedRecalls ?: return Result.Error(InconsistentGameData),
+                correctRecalls = playerStats[module]?.correctRecalls ?: return Result.Error(
+                    ValidationError.InconsistentGameData,
+                ),
+                incorrectRecalls = playerStats[module]?.incorrectRecalls ?: return Result.Error(
+                    ValidationError.InconsistentGameData,
+                ),
+                missedRecalls = playerStats[module]?.missedRecalls ?: return Result.Error(
+                    ValidationError.InconsistentGameData,
+                ),
                 correctNonRecalls = playerStats[module]?.correctNonRecalls ?: return Result.Error(
-                    InconsistentGameData,
+                    ValidationError.InconsistentGameData,
                 ),
                 gameEndTime = gameEndTime,
             )

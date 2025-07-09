@@ -6,7 +6,6 @@ import org.squidfish.tuplenback.utils.Result
 
 val LevelData.asGameSettings: Result<GameSettings, Error>
     get() {
-        // val settings = LevelRepository.get(this) - doesn't work because get is a suspend function
         // TODO: probably have a preloaded map of level -> settings
 
         return Result.Success(

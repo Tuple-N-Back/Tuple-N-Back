@@ -13,10 +13,9 @@ import kotlinx.coroutines.launch
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
+import org.squidfish.tuplenback.utils.BadConfigurationError
 import org.squidfish.tuplenback.utils.Error
-import org.squidfish.tuplenback.utils.MissingGameModules
 import org.squidfish.tuplenback.utils.Result
-import org.squidfish.tuplenback.utils.UnsetGame
 import org.squidfish.tuplenback.utils.onError
 import org.squidfish.tuplenback.utils.onSuccess
 
@@ -147,10 +146,10 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private fun initGameEngines(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game engines")
 
-        val game = game ?: return Result.Error(UnsetGame)
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         if (game.modules.isEmpty()) {
-            return Result.Error(MissingGameModules)
+            return Result.Error(BadConfigurationError.MissingGameModules)
         }
 
         game.modules.forEach {
@@ -166,7 +165,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private fun initGameState(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game state")
 
-        val game = game ?: return Result.Error(UnsetGame)
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         game.modules.forEach { module ->
             _gameState.update {
@@ -194,7 +193,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
 
         if (gameEngines[game] == null) {
             Log.e(TAG, "$game is not part of the loaded game engines")
-            return Result.Error(MissingGameModules)
+            return Result.Error(BadConfigurationError.MissingGameModules)
         }
 
         gameEngines[game]?.updateStats(true)
@@ -223,7 +222,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
             _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
         }
 
-        val game = game ?: return Result.Error(UnsetGame)
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
@@ -260,7 +259,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
             }
         }
 
-        val game = game ?: return Result.Error(UnsetGame)
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         // end round or end game and get stats
         if (_gameState.value.currentRound >= game.settings.totalRounds) {

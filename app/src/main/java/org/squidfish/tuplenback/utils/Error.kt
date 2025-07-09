@@ -1,3 +1,3 @@
 package org.squidfish.tuplenback.utils
 
-sealed interface Error
+interface Error
