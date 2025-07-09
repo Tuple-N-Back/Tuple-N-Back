@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.squidfish.tuplenback.data.game.LocalStorageRepository
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
@@ -33,11 +32,10 @@ private const val TAG = "GameViewModel"
  * @property[timerJob] Timer, used to count when a round will end in a game.
  * @property[gameEngines] List of game engines for the current [Game].
  * @property[game] The type of [Game] that is being played.
- * @property[playerStats] [PlayerPerformanceStats] for each [GameModule] in the current game
  *
  * @see[AppEvent]
  */
-class GameViewModel(private val repository: LocalStorageRepository) : ViewModel() {
+class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
@@ -47,7 +45,11 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
     var game: Game? = null
         private set
 
-    var playerStats: Map<GameModule, PlayerPerformanceStats> = mapOf()
+    /**
+     * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
+     */
+    val playerStats: Map<GameModule, PlayerPerformanceStats>
+        get() = gameEngines.mapValues { (_, engine) -> engine.getStats() }
 
     init {
         viewModelScope.launch {
@@ -116,7 +118,6 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         this.game = game
 
         gameEngines.clear()
-        playerStats = mapOf()
 
         initGameEngines().onError { return Result.Error(it) }
         initGameState().onError { return Result.Error(it) }
@@ -263,7 +264,6 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
 
         // end round or end game and get stats
         if (_gameState.value.currentRound >= game.settings.totalRounds) {
-            playerStats = collectPlayerStats()
             _gameState.update {
                 it.copy(gameOver = true)
             }
@@ -300,10 +300,4 @@ class GameViewModel(private val repository: LocalStorageRepository) : ViewModel(
         timerJob?.cancel()
         super.onCleared()
     }
-
-    /**
-     * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
-     */
-    private fun collectPlayerStats(): Map<GameModule, PlayerPerformanceStats> =
-        gameEngines.mapValues { (_, engine) -> engine.getStats() }
 }

@@ -14,7 +14,7 @@ interface GameStatsDao {
         WHERE gameType = :gameType
         ORDER BY gameEndTime DESC
         LIMIT :amount
-    """,
+        """,
     )
     suspend fun getByGameType(amount: Int, gameType: Game): List<GameStatsData>
 
@@ -26,7 +26,7 @@ interface GameStatsDao {
             ORDER BY gameEndTime DESC
             LIMIT :amount) AS b
             ON  a.gameEndTime = b.gameEndTime
-    """,
+        """,
     )
     suspend fun getRecent(amount: Int): List<GameStatsData>
 

@@ -42,7 +42,7 @@ class GameStatsMapperTests {
         )
 
         // When
-        val modelStats = dataStats.asGameModel().data
+        val modelStats = dataStats.asGameModel.data
 
         // Then
         assert(
@@ -81,7 +81,7 @@ class GameStatsMapperTests {
         val dataStats = listOf<GameStatsData>()
 
         // When
-        val modelStats = dataStats.asGameModel()
+        val modelStats = dataStats.asGameModel
 
         // Then
         assert(modelStats == Result.Error(MissingGameStats))
@@ -114,7 +114,7 @@ class GameStatsMapperTests {
         )
 
         // When
-        val modelStats = dataStats.asGameModel()
+        val modelStats = dataStats.asGameModel
 
         // Then
         assert(

@@ -45,7 +45,7 @@ class GameDataMapperTests {
         )
 
         // When
-        val dataStats = modelStats.asGameStatsData().data
+        val dataStats = modelStats.asGameStatsData.data
 
         // Then
         assert(
@@ -99,7 +99,7 @@ class GameDataMapperTests {
         )
 
         // When
-        val dataStats = modelStats.asGameStatsData()
+        val dataStats = modelStats.asGameStatsData
 
         // Then
         assert(dataStats == Result.Error(InconsistentGameData))

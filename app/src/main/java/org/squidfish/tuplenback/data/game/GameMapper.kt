@@ -10,62 +10,65 @@ import org.squidfish.tuplenback.utils.InconsistentGameStats
 import org.squidfish.tuplenback.utils.MissingGameStats
 import org.squidfish.tuplenback.utils.Result
 
-fun List<GameStatsData>.asGameModel(): Result<GameModel, Error> {
-    if (this.isEmpty()) {
-        return Result.Error(MissingGameStats)
-    }
+val List<GameStatsData>.asGameModel: Result<GameModel, Error>
+    get() {
+        val first = firstOrNull() ?: return Result.Error(MissingGameStats)
 
-    val first = this.first()
-
-    this.forEach { entry ->
-        if (
-            entry.gameType != first.gameType ||
-            entry.gameEndTime != first.gameEndTime ||
-            entry.level != first.level
-        ) {
-            return Result.Error(InconsistentGameStats)
+        forEach { entry ->
+            if (
+                entry.gameType != first.gameType ||
+                entry.gameEndTime != first.gameEndTime ||
+                entry.level != first.level
+            ) {
+                return Result.Error(InconsistentGameStats)
+            }
         }
-    }
 
-    val playerStats = mutableMapOf<GameModule, PlayerPerformanceStats>()
-    this.forEach { stat ->
-        playerStats[stat.gameModule] = PlayerPerformanceStats(
-            correctRecalls = stat.correctRecalls,
-            incorrectRecalls = stat.incorrectRecalls,
-            missedRecalls = stat.missedRecalls,
-            correctNonRecalls = stat.correctNonRecalls,
-        )
-    }
+        val playerStats = mutableMapOf<GameModule, PlayerPerformanceStats>()
+        forEach { stat ->
+            playerStats[stat.gameModule] = PlayerPerformanceStats(
+                correctRecalls = stat.correctRecalls,
+                incorrectRecalls = stat.incorrectRecalls,
+                missedRecalls = stat.missedRecalls,
+                correctNonRecalls = stat.correctNonRecalls,
+            )
+        }
 
-    return Result.Success(
-        GameModel(
-            gameType = first.gameType,
-            playerStats = playerStats,
-            gameSettings = LevelRepository.getSettings(first.gameType, first.level),
-            gameEndTime = first.gameEndTime,
-        ),
-    )
-}
+        val gameSettings = when (val res = LevelData(first.gameType, first.level).asGameSettings) {
+            is Result.Error -> return res
+            is Result.Success -> res.data
+        }
 
-fun GameModel.asGameStatsData(): Result<List<GameStatsData>, Error> {
-    if (this.gameType.modules.size != this.playerStats.size) {
-        return Result.Error(InconsistentGameData)
-    }
-
-    val gameStats = this.gameType.modules.map { module ->
-        GameStatsData(
-            gameType = this.gameType,
-            gameModule = module,
-            level = this.level,
-            correctRecalls = this.playerStats[module]?.correctRecalls ?: return Result.Error(InconsistentGameData),
-            incorrectRecalls = this.playerStats[module]?.incorrectRecalls ?: return Result.Error(InconsistentGameData),
-            missedRecalls = this.playerStats[module]?.missedRecalls ?: return Result.Error(InconsistentGameData),
-            correctNonRecalls = this.playerStats[module]?.correctNonRecalls ?: return Result.Error(
-                InconsistentGameData,
+        return Result.Success(
+            GameModel(
+                gameType = first.gameType,
+                playerStats = playerStats,
+                gameSettings = gameSettings,
+                gameEndTime = first.gameEndTime,
             ),
-            gameEndTime = this.gameEndTime,
         )
     }
 
-    return Result.Success(gameStats)
-}
+val GameModel.asGameStatsData: Result<List<GameStatsData>, Error>
+    get() {
+        if (gameType.modules.size != playerStats.size) {
+            return Result.Error(InconsistentGameData)
+        }
+
+        val gameStats = gameType.modules.map { module ->
+            GameStatsData(
+                gameType = gameType,
+                gameModule = module,
+                level = level,
+                correctRecalls = playerStats[module]?.correctRecalls ?: return Result.Error(InconsistentGameData),
+                incorrectRecalls = playerStats[module]?.incorrectRecalls ?: return Result.Error(InconsistentGameData),
+                missedRecalls = playerStats[module]?.missedRecalls ?: return Result.Error(InconsistentGameData),
+                correctNonRecalls = playerStats[module]?.correctNonRecalls ?: return Result.Error(
+                    InconsistentGameData,
+                ),
+                gameEndTime = gameEndTime,
+            )
+        }
+
+        return Result.Success(gameStats)
+    }

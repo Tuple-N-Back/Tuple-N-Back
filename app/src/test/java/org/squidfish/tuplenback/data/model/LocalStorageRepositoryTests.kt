@@ -9,7 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.squidfish.tuplenback.data.game.LocalStorageRepository
+import org.squidfish.tuplenback.data.game.GameRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
@@ -21,7 +21,7 @@ import org.squidfish.tuplenback.utils.data
 @RunWith(RobolectricTestRunner::class)
 class LocalStorageRepositoryTests {
     private lateinit var db: AppDatabase
-    private lateinit var repository: LocalStorageRepository
+    private lateinit var repository: GameRepository
 
     @Before
     fun createDb() {
@@ -30,7 +30,7 @@ class LocalStorageRepositoryTests {
             context,
             AppDatabase::class.java,
         ).allowMainThreadQueries().build()
-        this.repository = LocalStorageRepository(this.db)
+        this.repository = GameRepository(this.db)
     }
 
     @After

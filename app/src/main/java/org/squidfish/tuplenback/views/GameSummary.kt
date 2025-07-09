@@ -119,7 +119,7 @@ fun StatCard(
 
         // Stats
         Column {
-            StatRow("Total ", stats.getCurrentRound().toString())
+            StatRow("Total ", stats.rounds.toString())
             StatRow("Correct", stats.correctRecalls.toString())
             StatRow("Incorrect", stats.incorrectRecalls.toString())
             StatRow("Missed", stats.missedRecalls.toString())
