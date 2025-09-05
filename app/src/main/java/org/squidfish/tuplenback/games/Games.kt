@@ -18,7 +18,6 @@ import org.squidfish.tuplenback.games.engines.SoundGameEngine
  * @see[GameSettings]
  */
 enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
-    None(emptyList(), GameSettings(0, 0, 0, 0)),
     GridPiano(listOf(GameModule.Grid, GameModule.Piano), GameSettings(2, 3, 1500, 15)),
     Grid(listOf(GameModule.Grid), GameSettings(2, 3, 1500, 20)),
 }

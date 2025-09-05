@@ -20,5 +20,5 @@ data class GameSettings(
 
     // TODO: maybe change location, since it doesn't affect game behaviour. On the other hand, the
     //  gameEngines don't care about milliPerRound or totalRounds either
-    val timerUpdateInterval: Long = 50, // in millis
+    val timerUpdateInterval: Long = 30, // in millis
 )

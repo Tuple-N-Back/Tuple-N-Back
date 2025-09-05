@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
@@ -19,6 +20,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.squidfish.tuplenback.MainActivity
 import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.games.Game
+import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
 
@@ -56,13 +58,15 @@ fun TupleNBackApp(
                         gameModel.onEvent(AppEvent.ResetGameState)
                         navController.navigate(ScreenType.MainMenu.name)
                     },
-                    viewModel = gameModel,
+                    onGuess = { module: GameModule -> gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module)) },
+                    state = gameModel.gameState.collectAsState().value,
+                    game = gameModel.game ?: throw IllegalStateException("Game cannot be null"),
                 )
             }
             composable(route = ScreenType.Summary.name) {
                 Log.v(TAG, "Composing ${ScreenType.Summary}")
                 GameSummaryScreen(
-                    viewModel = gameModel,
+                    stats = gameModel.playerStats,
                     onPlayAgain = {
                         navController.navigate(ScreenType.Game.name) {
                             popUpTo(ScreenType.Game.name) { inclusive = true }
@@ -96,7 +100,7 @@ fun TupleNBackApp(
                         navController.navigate(ScreenType.GameSelection.name)
                     },
                     onPlayRecent = {
-                        if (gameModel.game == Game.None) {
+                        if (gameModel.game == null) {
                             Log.w(TAG, "Cannot play recent: No game played previously")
                             return@MainMenuScreen
                         }

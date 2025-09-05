@@ -13,6 +13,11 @@ import kotlinx.coroutines.launch
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.engines.GameEngine
+import org.squidfish.tuplenback.utils.BadConfigurationError
+import org.squidfish.tuplenback.utils.Error
+import org.squidfish.tuplenback.utils.Result
+import org.squidfish.tuplenback.utils.onError
+import org.squidfish.tuplenback.utils.onSuccess
 
 private const val TAG = "GameViewModel"
 
@@ -29,14 +34,32 @@ private const val TAG = "GameViewModel"
  *
  * @see[AppEvent]
  */
-class GameViewModel : ViewModel() {
+class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var timerJob: Job? = null
 
     private val gameEngines = mutableMapOf<GameModule, GameEngine>()
-    var game: Game = Game.None // TODO: load game played on last session
+    var game: Game? = null
+        private set
+
+    /**
+     * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
+     */
+    val playerStats: Map<GameModule, PlayerPerformanceStats>
+        get() = gameEngines.mapValues { (_, engine) -> engine.getStats() }
+
+    init {
+        viewModelScope.launch {
+
+            repository.getRecent().onSuccess {
+                it?.gameType?.let { prevGame -> game = prevGame }
+            }.onError {
+                Log.e(TAG, "Cannot initialize ViewModel. Repository error: $it")
+            }
+        }
+    }
 
     /**
      * Receive and handle view events
@@ -46,7 +69,7 @@ class GameViewModel : ViewModel() {
     fun onEvent(event: AppEvent) = when (event) {
         is AppEvent.PlayAgain -> {
             Log.i(TAG, "Playing again")
-            startGame(game)
+            playAgain()
         }
         is AppEvent.ResetGameState -> {
             Log.i(TAG, "Resetting game state")
@@ -54,7 +77,9 @@ class GameViewModel : ViewModel() {
         }
         is AppEvent.MakeMnemonicRepeatGuess -> {
             Log.i(TAG, "Handling button guess")
-            handleGuess(event.gameMod)
+            handleGuess(event.gameMod).onError {
+                Log.e(TAG, it.toString())
+            }
         }
         is AppEvent.AbortOngoingGame -> {
             Log.i(TAG, "Aborting game")
@@ -62,22 +87,44 @@ class GameViewModel : ViewModel() {
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
-            startGame(event.game)
+            startGame(event.game).onError {
+                Log.e(TAG, it.toString())
+            }
+        }
+    }
+
+    /**
+     * Starts the recentmost non-abandoned game
+     */
+    private fun playAgain() {
+        viewModelScope.launch {
+            repository.getRecent().onSuccess {
+                if (it == null) {
+                    return@launch
+                }
+
+                startGame(it.gameType)
+            }.onError {
+                Log.e(TAG, "Cannot play again. Repository error: $it")
+            }
         }
     }
 
     /**
      * Starts a new game. Also handles all necessary initialization
      */
-    private fun startGame(game: Game) {
+    private fun startGame(game: Game): Result<Unit, Error> {
         this.game = game
-        verifyGame()
 
         gameEngines.clear()
-        initGameEngines()
-        initGameState()
+
+        initGameEngines().onError { return Result.Error(it) }
+        initGameState().onError { return Result.Error(it) }
+
         Log.i(TAG, "Starting game")
-        startNewRound()
+        startNewRound().onError { return Result.Error(it) }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -85,9 +132,6 @@ class GameViewModel : ViewModel() {
      * engines.
      */
     private fun resetGameState() {
-        verifyGame()
-
-        // TODO: this for PlayAgain?
         gameEngines.forEach { (_, engine) ->
             engine.resetStats()
         }
@@ -96,40 +140,43 @@ class GameViewModel : ViewModel() {
     }
 
     /**
-     * Create a new [GameEngine] for all game modules in [game]. If a [GameEngine] already exists,
+     * Create a new [GameEngine] for each game module in [game]. If a [GameEngine] already exists,
      * it is overwritten.
      */
-    private fun initGameEngines() {
+    private fun initGameEngines(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game engines")
 
-        verifyGame()
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         if (game.modules.isEmpty()) {
-            throw IllegalArgumentException("No game types set in settings")
+            return Result.Error(BadConfigurationError.MissingGameModules)
         }
 
         game.modules.forEach {
             gameEngines[it] = it.toGameEngine(game.settings.recallsBack, game.settings.repeatChance)
         }
+
+        return Result.Success(Unit)
     }
 
     /**
      * Set the correct game module information to the [gameState].
      */
-    private fun initGameState() {
+    private fun initGameState(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game state")
 
-        verifyGame()
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         game.modules.forEach { module ->
             _gameState.update {
                 it.apply {
                     it.mnemonicIds[module] = 0
-                    it.gameStats[module] = GameStats()
                     it.recallCheck[module] = RecallCheck.NONE
                 }
             }
         }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -141,12 +188,12 @@ class GameViewModel : ViewModel() {
      * @param[game] the game module the guess is made towards.
      *
      */
-    private fun handleGuess(game: GameModule) {
+    private fun handleGuess(game: GameModule): Result<Unit, Error> {
         Log.d(TAG, "$game Button pressed")
 
         if (gameEngines[game] == null) {
             Log.e(TAG, "$game is not part of the loaded game engines")
-            return
+            return Result.Error(BadConfigurationError.MissingGameModules)
         }
 
         gameEngines[game]?.updateStats(true)
@@ -156,6 +203,8 @@ class GameViewModel : ViewModel() {
                     if (gameEngines[game]?.isRepeat == true) RecallCheck.CORRECT else RecallCheck.INCORRECT
             }
         }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -164,7 +213,7 @@ class GameViewModel : ViewModel() {
      *
      * @see [GameEngine.createNewState]
      */
-    private fun startNewRound() {
+    private fun startNewRound(): Result<Unit, Error> {
         Log.d(TAG, "Starting new round")
         _gameState.update { it.copy(currentRound = it.currentRound + 1) }
 
@@ -173,7 +222,7 @@ class GameViewModel : ViewModel() {
             _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
         }
 
-        verifyGame()
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
@@ -187,13 +236,15 @@ class GameViewModel : ViewModel() {
 
             endRound()
         }
+
+        return Result.Success(Unit)
     }
 
     /**
      * Ends round, i.e, stops the round timer, increments the round counter and resets the recall
      * check state. On game end, adds stats to the [GameState].
      */
-    private fun endRound() {
+    private fun endRound(): Result<Unit, Error> {
         Log.d(TAG, "Ending round")
 
         // stop timer
@@ -208,19 +259,30 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        verifyGame()
+        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+
         // end round or end game and get stats
         if (_gameState.value.currentRound >= game.settings.totalRounds) {
             _gameState.update {
-                it.copy(gameOver = true).apply {
-                    gameEngines.forEach { (game, gameEngine) ->
-                        it.gameStats[game] = gameEngine.getStats()
-                    }
-                }
+                it.copy(gameOver = true)
+            }
+
+            // save stats
+            viewModelScope.launch {
+                repository.insert(
+                    GameModel(
+                        gameType = game,
+                        gameSettings = game.settings,
+                        playerStats = playerStats,
+                        gameEndTime = System.currentTimeMillis(),
+                    ),
+                )
             }
         } else {
             startNewRound()
         }
+
+        return Result.Success(Unit)
     }
 
     /**
@@ -230,18 +292,6 @@ class GameViewModel : ViewModel() {
         Log.i(TAG, "Aborting game")
 
         timerJob?.cancel()
-    }
-
-    /**
-     * Check if game is set i.e. is not Game.None. If not, log and throw an exception
-     *
-     * TODO: move away from using it -unnecessarily- in every function
-     */
-    private fun verifyGame() {
-        if (game == Game.None) {
-            Log.e(TAG, "Cannot reset game state - game is not set")
-            throw IllegalStateException("Game is not set")
-        }
     }
 
     override fun onCleared() {

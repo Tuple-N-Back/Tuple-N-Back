@@ -1,6 +1,5 @@
 package org.squidfish.tuplenback.views
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,8 +16,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,22 +23,22 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.modules.GridGame
 import org.squidfish.tuplenback.games.modules.SoundGame
-import org.squidfish.tuplenback.models.AppEvent
-import org.squidfish.tuplenback.models.GameViewModel
+import org.squidfish.tuplenback.models.GameState
 import org.squidfish.tuplenback.models.RecallCheck
 
 @Composable
 fun GameScreen(
-    modifier: Modifier,
     onFinnish: () -> Unit,
     onAbort: () -> Unit,
-    viewModel: GameViewModel,
+    onGuess: (GameModule) -> Unit,
+    state: GameState,
+    game: Game,
+    modifier: Modifier = Modifier,
 ) {
-    val state by viewModel.gameState.collectAsState()
-
     if (state.gameOver) {
         LaunchedEffect(Unit) {
             onFinnish()
@@ -73,13 +70,13 @@ fun GameScreen(
                         .padding(top = 32.dp),
                 ) {
                     Text(
-                        text = "${state.currentRound}/${viewModel.game.settings.totalRounds}",
-                        fontSize = 10.sp,
+                        text = "${state.currentRound}/${game.settings.totalRounds}",
+                        fontSize = 32.sp,
                     )
                 }
             }
 
-            Games(state.mnemonicIds, viewModel.game.modules)
+            Games(state.mnemonicIds, game.modules)
 
             Row(
                 verticalAlignment = Alignment.Bottom,
@@ -91,8 +88,8 @@ fun GameScreen(
                 RepeatGuessButtons(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     recallGuesses = state.recallCheck,
-                    games = viewModel.game.modules,
-                    onGuess = { viewModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(it)) },
+                    games = game.modules,
+                    onGuess = { onGuess(it) },
                 )
             }
         }
@@ -102,13 +99,13 @@ fun GameScreen(
 @Preview
 @Composable
 fun GameScreenPreview() {
-    val gameModel = GameViewModel()
-
     GameScreen(
         modifier = Modifier,
         onFinnish = {},
         onAbort = {},
-        viewModel = gameModel,
+        onGuess = {},
+        state = GameState(),
+        game = Game.GridPiano,
     )
 }
 
@@ -125,7 +122,7 @@ fun TimerBar(progress: Float) {
 @Composable
 fun RepeatGuessButton(
     game: GameModule,
-    recallCheck: RecallCheck?,
+    recallCheck: RecallCheck,
     onGuess: (game: GameModule) -> Unit,
     modifier: Modifier,
 ) {
@@ -137,10 +134,6 @@ fun RepeatGuessButton(
             RecallCheck.CORRECT -> buttonColors(Color.Green)
             RecallCheck.INCORRECT -> buttonColors(Color.Red)
             RecallCheck.NONE -> buttonColors()
-            null -> {
-                Log.wtf("RepeatGuessButton", "RecallCheck is null")
-                return
-            }
         },
     ) {
         Text("$game")
@@ -174,7 +167,7 @@ fun RepeatGuessButtons(
         RepeatGuessButton(
             game = game,
             recallCheck = recallState,
-            onGuess = { onGuess(it) },
+            onGuess = { onGuess(game) },
             modifier = modifier,
         )
 

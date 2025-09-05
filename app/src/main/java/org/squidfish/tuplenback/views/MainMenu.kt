@@ -53,5 +53,12 @@ fun MainMenuButton(onClick: () -> Unit, name: String) {
 @Preview
 @Composable
 fun MainMenuScreenPreview() {
-    TupleNBackAppPreview()
+    MainMenuScreen(
+        onSelectGameMode = {},
+        onPlayRecent = {},
+        onSettings = {},
+        onInfo = {},
+        onExit = {},
+        modifier = Modifier,
+    )
 }
