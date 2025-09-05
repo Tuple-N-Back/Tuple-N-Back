@@ -10,9 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -89,14 +88,14 @@ fun GameSelectionScreen(
     ) {
         columns.forEach { columnItems ->
             Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 columnItems.forEach { game ->
                     GameCard(
                         game = game,
-                        onClick = { onAction(GameSelectionAction.GameSelected(game)) }
+                        onClick = { onAction(GameSelectionAction.GameSelected(game)) },
                     )
                 }
             }
@@ -190,9 +189,8 @@ private fun GameSelectionScreenPreview() {
 @PreviewDynamicColors
 @Composable
 private fun GameCardPreview() {
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Adaptive(minSize = 400.dp),
-        modifier = Modifier.systemBarsPadding()
+    LazyColumn(
+        modifier = Modifier.systemBarsPadding(),
     ) {
         items(Game.entries) { game ->
             GameCard(
