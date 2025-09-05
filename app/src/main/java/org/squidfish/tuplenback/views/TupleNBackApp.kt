@@ -8,6 +8,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,20 +17,23 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.getKoin
 import org.squidfish.tuplenback.MainActivity
 import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
+import org.squidfish.tuplenback.models.RecentRepository
+import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
 import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionScreen
+import org.squidfish.tuplenback.utils.data
 
 enum class ScreenType(@param:StringRes val title: Int) {
     GameSelection(R.string.game_selection_screen_name),
-    Game(R.string.game_screen_name),
-    Summary(R.string.summary_screen_name),
     MainMenu(R.string.main_menu_screen_name),
 }
 
@@ -47,12 +52,18 @@ fun TupleNBackApp(
             startDestination = ScreenType.MainMenu.name,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(route = ScreenType.Game.name) {
-                Log.v(TAG, "Composing ${ScreenType.Game}")
+            composable<ScreenDestination.GameScreen> { backStackEntry ->
+                val navEntry = backStackEntry.toRoute<ScreenDestination.GameScreen>()
+                SideEffect {
+                    Log.v(TAG, "Composed ${ScreenDestination.GameScreen::class}")
+                }
+                LaunchedEffect(Unit) {
+                    gameModel.onEvent(AppEvent.StartGame(navEntry.game))
+                }
                 GameScreen(
                     modifier = Modifier,
                     onFinnish = {
-                        navController.navigate(ScreenType.Summary.name)
+                        navController.navigate(ScreenDestination.SummaryScreen(game = navEntry.game))
                     },
                     onAbort = {
                         gameModel.onEvent(AppEvent.AbortOngoingGame)
@@ -64,17 +75,20 @@ fun TupleNBackApp(
                     game = gameModel.game ?: throw IllegalStateException("Game cannot be null"),
                 )
             }
-            composable(route = ScreenType.Summary.name) {
-                Log.v(TAG, "Composing ${ScreenType.Summary}")
+            composable<ScreenDestination.SummaryScreen> { backStackEntry ->
+                val navEntry = backStackEntry.toRoute<ScreenDestination.SummaryScreen>()
+                SideEffect {
+                    Log.v(TAG, "Composed ${ScreenDestination.SummaryScreen::class}")
+                }
                 GameSummaryScreen(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
-                        navController.navigate(ScreenType.Game.name) {
-                            popUpTo(ScreenType.Game.name) { inclusive = true }
+                        navController.navigate(ScreenDestination.GameScreen(navEntry.game)) {
+                            popUpTo(ScreenDestination.GameScreen(game = navEntry.game)) { inclusive = true }
                         }
 
                         gameModel.onEvent(AppEvent.ResetGameState)
-                        gameModel.onEvent(AppEvent.PlayAgain)
+//                        gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onMainMenu = {
                         navController.navigate(ScreenType.MainMenu.name) {
@@ -84,11 +98,12 @@ fun TupleNBackApp(
                         gameModel.onEvent(AppEvent.ResetGameState)
                     },
                 )
-                Log.v(TAG, "Finished GameSummaryScreen composition")
             }
 
             composable(route = ScreenType.GameSelection.name) {
-                Log.v(TAG, "Composing ${ScreenType.GameSelection}")
+                SideEffect {
+                    Log.v(TAG, "Composed ${ScreenType.GameSelection}")
+                }
                 GameSelectionScreen(
                     viewModel = koinViewModel(),
                     navController = navController,
@@ -106,8 +121,8 @@ fun TupleNBackApp(
                             return@MainMenuScreen
                         }
 
-                        navController.navigate(ScreenType.Game.name)
-                        gameModel.onEvent(AppEvent.PlayAgain)
+                        navController.navigate(ScreenDestination.GameScreen(game = Game.Grid))
+//                        gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},
                     onInfo = {},

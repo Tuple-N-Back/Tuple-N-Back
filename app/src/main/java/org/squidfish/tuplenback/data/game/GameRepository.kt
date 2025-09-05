@@ -20,21 +20,19 @@ class GameRepository(private val db: AppDatabase) : RecentRepository<GameModel> 
         return recent.asGameModel
     }
 
-    override suspend fun insert(data: GameModel): Result<Unit, Error> =
-        when (val stats = data.asGameStatsData) {
-            is Result.Success -> {
-                db.getGameStatsDao().insertAll(stats.data)
-                Result.Success(Unit)
-            }
-            is Result.Error -> stats
+    override suspend fun insert(data: GameModel): Result<Unit, Error> = when (val stats = data.asGameStatsData) {
+        is Result.Success -> {
+            db.getGameStatsDao().insertAll(stats.data)
+            Result.Success(Unit)
         }
+        is Result.Error -> stats
+    }
 
-    override suspend fun delete(data: GameModel): Result<Unit, Error> =
-        when (val stats = data.asGameStatsData) {
-            is Result.Success -> {
-                db.getGameStatsDao().deleteAll(stats.data)
-                Result.Success(Unit)
-            }
-            is Result.Error -> stats
+    override suspend fun delete(data: GameModel): Result<Unit, Error> = when (val stats = data.asGameStatsData) {
+        is Result.Success -> {
+            db.getGameStatsDao().deleteAll(stats.data)
+            Result.Success(Unit)
         }
+        is Result.Error -> stats
+    }
 }

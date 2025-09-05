@@ -85,6 +85,12 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
             Log.i(TAG, "Aborting game")
             abortGame()
         }
+        is AppEvent.StartGame -> {
+            Log.i(TAG, "Starting game: $event.game")
+            startGame(event.game).onError {
+                Log.e(TAG, it.toString())
+            }
+        }
     }
 
     /**

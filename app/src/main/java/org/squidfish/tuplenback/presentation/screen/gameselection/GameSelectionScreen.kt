@@ -43,8 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import org.squidfish.tuplenback.games.Game
+import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
 import org.squidfish.tuplenback.presentation.util.ObserveAsEvents
-import org.squidfish.tuplenback.views.ScreenType
 
 @Composable
 fun GameSelectionScreen(viewModel: GameSelectionViewModel, navController: NavController) {
@@ -52,7 +52,11 @@ fun GameSelectionScreen(viewModel: GameSelectionViewModel, navController: NavCon
 
     ObserveAsEvents(viewModel.eventFlow) { event ->
         when (event) {
-            is GameSelectionEvent.StartGame -> navController.navigate(ScreenType.Game.name)
+            is GameSelectionEvent.StartGame -> {
+                // Temporary solution until we rework Game
+                val game = Game.entries.first { it.modules.joinToString(" ") == event.game.title }
+                navController.navigate(ScreenDestination.GameScreen(game))
+            }
         }
     }
 
