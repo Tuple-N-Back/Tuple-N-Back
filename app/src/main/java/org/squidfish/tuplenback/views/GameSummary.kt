@@ -19,8 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,22 +28,18 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.models.AppEvent
-import org.squidfish.tuplenback.models.GameStats
-import org.squidfish.tuplenback.models.GameViewModel
+import org.squidfish.tuplenback.models.PlayerPerformanceStats
 
 private const val TAG = "GameScreen"
 
 @Composable
 fun GameSummaryScreen(
-    viewModel: GameViewModel,
+    stats: Map<GameModule, PlayerPerformanceStats>,
     onPlayAgain: () -> Unit,
     onMainMenu: () -> Unit,
 ) {
-    val state by viewModel.gameState.collectAsState()
-    val sortedStats = remember(state.gameStats) { state.gameStats.toSortedMap().entries.toList() }
+    val sortedStats = remember(stats) { stats.toSortedMap().entries.toList() }
 
     Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -96,7 +90,7 @@ fun GameSummaryScreen(
 fun StatCard(
     modifier: Modifier,
     game: GameModule,
-    stats: GameStats,
+    stats: PlayerPerformanceStats,
 ) {
     Card(
         modifier = modifier,
@@ -125,6 +119,7 @@ fun StatCard(
 
         // Stats
         Column {
+            StatRow("Total ", stats.rounds.toString())
             StatRow("Correct", stats.correctRecalls.toString())
             StatRow("Incorrect", stats.incorrectRecalls.toString())
             StatRow("Missed", stats.missedRecalls.toString())
@@ -155,8 +150,24 @@ private fun StatRow(name: String, value: String) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GameSummaryScreenPreview() {
-    val vm = GameViewModel()
-    vm.game = Game.GridPiano
-    vm.onEvent(AppEvent.ResetGameState)
-    GameSummaryScreen(vm, {}, {})
+    val stats = mutableMapOf(
+        GameModule.Grid to PlayerPerformanceStats(
+            correctRecalls = 2,
+            incorrectRecalls = 5,
+            missedRecalls = 1,
+            correctNonRecalls = 2,
+        ),
+        GameModule.Piano to PlayerPerformanceStats(
+            correctRecalls = 4,
+            incorrectRecalls = 1,
+            missedRecalls = 0,
+            correctNonRecalls = 6,
+        ),
+    )
+
+    GameSummaryScreen(
+        stats,
+        onPlayAgain = {},
+        onMainMenu = {},
+    )
 }
