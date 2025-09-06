@@ -20,17 +20,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.getKoin
 import org.squidfish.tuplenback.MainActivity
 import org.squidfish.tuplenback.R
-import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
-import org.squidfish.tuplenback.models.RecentRepository
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
 import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionScreen
-import org.squidfish.tuplenback.utils.data
 
 enum class ScreenType(@param:StringRes val title: Int) {
     GameSelection(R.string.game_selection_screen_name),
@@ -58,12 +54,14 @@ fun TupleNBackApp(
                     Log.v(TAG, "Composed ${ScreenDestination.GameScreen::class}")
                 }
                 LaunchedEffect(Unit) {
-                    gameModel.onEvent(AppEvent.StartGame(navEntry.game))
+                    navEntry.game?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
                 }
                 GameScreen(
                     modifier = Modifier,
                     onFinnish = {
-                        navController.navigate(ScreenDestination.SummaryScreen(game = navEntry.game))
+                        (navEntry.game ?: gameModel.game)?.let {
+                            navController.navigate(ScreenDestination.SummaryScreen(game = it))
+                        }
                     },
                     onAbort = {
                         gameModel.onEvent(AppEvent.AbortOngoingGame)
@@ -83,12 +81,12 @@ fun TupleNBackApp(
                 GameSummaryScreen(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
-                        navController.navigate(ScreenDestination.GameScreen(navEntry.game)) {
+                        navController.navigate(ScreenDestination.GameScreen(game = null)) {
                             popUpTo(ScreenDestination.GameScreen(game = navEntry.game)) { inclusive = true }
                         }
 
                         gameModel.onEvent(AppEvent.ResetGameState)
-//                        gameModel.onEvent(AppEvent.PlayAgain)
+                        gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onMainMenu = {
                         navController.navigate(ScreenType.MainMenu.name) {
@@ -121,8 +119,8 @@ fun TupleNBackApp(
                             return@MainMenuScreen
                         }
 
-                        navController.navigate(ScreenDestination.GameScreen(game = Game.Grid))
-//                        gameModel.onEvent(AppEvent.PlayAgain)
+                        navController.navigate(ScreenDestination.GameScreen(game = null))
+                        gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},
                     onInfo = {},
