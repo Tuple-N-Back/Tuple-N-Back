@@ -28,7 +28,7 @@ enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
  *
  * @see[GameEngine]
  */
-enum class GameModule(@StringRes val type: Int) {
+enum class GameModule(@param:StringRes val type: Int) {
     Grid(R.string.grid_game),
     Piano(R.string.sound_game),
     Colour(R.string.colour_game),

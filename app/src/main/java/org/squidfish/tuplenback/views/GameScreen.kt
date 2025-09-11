@@ -89,7 +89,7 @@ fun GameScreen(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     recallGuesses = state.recallCheck,
                     games = game.modules,
-                    onGuess = { onGuess(it) },
+                    onGuess = { onGuess(it) }, // TODO: Investigate why `onGuess = onGuess` does not trigger the action
                 )
             }
         }
