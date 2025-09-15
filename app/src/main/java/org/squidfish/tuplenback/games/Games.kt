@@ -36,7 +36,8 @@ enum class GameModule {
     Grid,
     Piano,
     Colour,
-    Vibration;
+    Vibration,
+    ;
 
     /**
      * Create a new game engine of the current enum entry.
