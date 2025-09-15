@@ -24,5 +24,7 @@ class GridEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsBack, 
         it == GridPosition.NONE || forbidden.contains(it.ordinal)
     }.random().ordinal
 
+    override fun onNewRound(mnemonicId: Int) {}
+
     override fun getRecent(): Int = super.getRecent() ?: GridPosition.NONE.ordinal
 }

@@ -215,12 +215,14 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
      */
     private fun startNewRound(): Result<Unit, Error> {
         Log.d(TAG, "Starting new round")
-        _gameState.update { it.copy(currentRound = it.currentRound + 1) }
 
         Log.d(TAG, "Generating round mnemonics")
+        val mnemonicIds = gameState.value.mnemonicIds
         gameEngines.forEach { (game, gameEngine) ->
-            _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
+            mnemonicIds[game] = gameEngine.createNewState()
+            mnemonicIds[game]?.let { gameEngine.onNewRound(it) }
         }
+        _gameState.update { it.copy(currentRound = it.currentRound + 1, mnemonicIds = mnemonicIds) }
 
         val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 

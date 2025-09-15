@@ -10,6 +10,8 @@ class SoundGameEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsB
 
     override fun genNewMnemonic(forbidden: List<Int>): Int = keys.indices.filterNot { forbidden.contains(it) }.random()
 
+    override fun onNewRound(mnemonicId: Int) {}
+
     companion object {
         val keys = Array(24) { i ->
             val j = i + 1

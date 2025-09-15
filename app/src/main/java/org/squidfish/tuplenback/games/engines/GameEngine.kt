@@ -39,6 +39,8 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      */
     protected abstract fun genNewMnemonic(forbidden: List<Int> = emptyList()): Int
 
+    abstract fun onNewRound(mnemonicId: Int)
+
     /**
      * Determine if the next generated mnemonic should be a repeat
      * @return [repeatChance]% chance of returning True

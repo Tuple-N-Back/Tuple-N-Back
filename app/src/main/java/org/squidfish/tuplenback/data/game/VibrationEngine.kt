@@ -52,7 +52,13 @@ class VibrationEngine(
     recallsBack: Int,
     repeatChance: Int,
 ) : GameEngine(recallsBack, repeatChance) {
-    fun playVibration(vibration: Vibration) {
+    override val gameButtonText: String = "Vibration"
+
+    override fun genNewMnemonic(forbidden: List<Int>): Int = (vibrations.indices.toSet() - forbidden).random()
+
+    override fun onNewRound(mnemonicId: Int) = playVibration(vibrations[mnemonicId])
+
+    private fun playVibration(vibration: Vibration) {
         val pattern = longArrayOf(0, *vibration.getTimings().toLongArray(), 0, 0)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -64,8 +70,4 @@ class VibrationEngine(
             vibrator.vibrate(pattern, -1)
         }
     }
-
-    override val gameButtonText: String = "Vibration"
-
-    override fun genNewMnemonic(forbidden: List<Int>): Int = (vibrations.indices.toSet() - forbidden).random()
 }
