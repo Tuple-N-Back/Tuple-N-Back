@@ -86,7 +86,9 @@ fun GameScreen(
                     .fillMaxWidth(),
             ) {
                 RepeatGuessButtons(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     recallGuesses = state.recallCheck,
                     games = game.modules,
                     onGuess = { onGuess(it) }, // TODO: Investigate why `onGuess = onGuess` does not trigger the action
@@ -149,7 +151,7 @@ fun Games(mnems: Map<GameModule, Int>, games: List<GameModule>) {
             GameModule.Grid -> GridGame(mnem)
             GameModule.Piano -> SoundGame(mnem)
             GameModule.Colour -> TODO()
-            GameModule.Vibration -> TODO()
+            GameModule.Vibration -> Unit
         }
     }
 }

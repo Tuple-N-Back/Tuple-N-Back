@@ -153,7 +153,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         }
 
         game.modules.forEach {
-            gameEngines[it] = it.toGameEngine(game.settings.recallsBack, game.settings.repeatChance)
+            gameEngines[it] = it.toGameEngine(game.settings)
         }
 
         return Result.Success(Unit)
@@ -228,9 +228,9 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
-            for (time in 0..game.settings.milliPerRound step game.settings.timerUpdateInterval) {
+            for (time in 0..game.settings.millisPerRound step game.settings.timerUpdateInterval) {
                 _gameState.update {
-                    it.copy(roundProgress = time.toFloat() / game.settings.milliPerRound)
+                    it.copy(roundProgress = time.toFloat() / game.settings.millisPerRound)
                 }
 
                 delay(game.settings.timerUpdateInterval)

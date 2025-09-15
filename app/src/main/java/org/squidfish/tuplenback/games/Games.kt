@@ -5,6 +5,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.parametersOf
 import org.squidfish.tuplenback.R
 import org.squidfish.tuplenback.data.game.Vibration
+import org.squidfish.tuplenback.data.game.VibrationEngine
 import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.games.engines.GridEngine
 import org.squidfish.tuplenback.games.engines.SoundGameEngine
@@ -42,19 +43,19 @@ enum class GameModule {
      *
      * @return A newly created game engine.
      */
-    fun toGameEngine(recallsBack: Int, repeatChance: Int): GameEngine = when (this) {
-        Grid -> GridEngine(recallsBack, repeatChance)
-        Piano -> SoundGameEngine(recallsBack, repeatChance)
+    fun toGameEngine(settings: GameSettings): GameEngine = when (this) {
+        Grid -> GridEngine(settings.recallsBack, settings.repeatChance)
+        Piano -> SoundGameEngine(settings.recallsBack, settings.repeatChance)
         Colour -> TODO()
-        Vibration -> GlobalContext.get().get {
+        Vibration -> GlobalContext.get().get<VibrationEngine> {
             parametersOf(
-                (100..1000).map {
-                    Vibration(1) {
+                (100..1000 step 100).map {
+                    Vibration(settings.millisPerRound.toInt()) {
                         vibration(it)
                     }
                 },
-                recallsBack,
-                repeatChance,
+                settings.recallsBack,
+                settings.repeatChance,
             )
         }
     }

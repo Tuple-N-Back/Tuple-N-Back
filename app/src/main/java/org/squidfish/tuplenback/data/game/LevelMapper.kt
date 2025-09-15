@@ -12,7 +12,7 @@ val LevelData.asGameSettings: Result<GameSettings, Error>
             GameSettings(
                 recallsBack = level,
                 totalRounds = 3,
-                milliPerRound = 1000,
+                millisPerRound = 1000,
                 repeatChance = 50,
                 timerUpdateInterval = 30,
             ),
