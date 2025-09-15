@@ -5,8 +5,10 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.ksp.generated.module
 import org.squidfish.tuplenback.di.DataSourceModule
+import org.squidfish.tuplenback.di.PlatformModule
 import org.squidfish.tuplenback.di.RepositoryModule
 import org.squidfish.tuplenback.di.ViewModelModule
+import org.squidfish.tuplenback.di.dynamicModule
 
 class TupleNBackApplication: Application() {
     override fun onCreate() {
@@ -15,9 +17,11 @@ class TupleNBackApplication: Application() {
         startKoin {
             androidContext(this@TupleNBackApplication)
             modules(
+                PlatformModule().module,
                 DataSourceModule().module,
                 RepositoryModule().module,
                 ViewModelModule().module,
+                dynamicModule,
             )
         }
     }

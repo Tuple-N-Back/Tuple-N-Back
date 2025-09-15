@@ -20,7 +20,7 @@ class GridEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsBack, 
     override val gameButtonText = "Grid"
 
     // generates random grid position
-    override fun genNewMnemonic(forbidden: List<Int?>): Int = GridPosition.entries.filterNot {
+    override fun genNewMnemonic(forbidden: List<Int>): Int = GridPosition.entries.filterNot {
         it == GridPosition.NONE || forbidden.contains(it.ordinal)
     }.random().ordinal
 

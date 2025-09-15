@@ -25,7 +25,12 @@ fun MainMenuScreen(
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.padding(horizontal = 32.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier
+            .padding(horizontal = 32.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center,
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -44,7 +49,9 @@ fun MainMenuButton(onClick: () -> Unit, name: String) {
     Button(
         onClick = onClick,
         shape = RectangleShape,
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
     ) {
         Text(name, style = MaterialTheme.typography.headlineMedium)
     }

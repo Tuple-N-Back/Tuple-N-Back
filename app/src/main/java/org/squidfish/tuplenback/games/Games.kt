@@ -1,8 +1,10 @@
 package org.squidfish.tuplenback.games
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
+import org.koin.core.context.GlobalContext
+import org.koin.core.parameter.parametersOf
 import org.squidfish.tuplenback.R
+import org.squidfish.tuplenback.data.game.Vibration
 import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.games.engines.GridEngine
 import org.squidfish.tuplenback.games.engines.SoundGameEngine
@@ -20,6 +22,7 @@ import org.squidfish.tuplenback.games.engines.SoundGameEngine
 enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
     GridPiano(listOf(GameModule.Grid, GameModule.Piano), GameSettings(2, 3, 1500, 15)),
     Grid(listOf(GameModule.Grid), GameSettings(2, 3, 1500, 20)),
+    GridVibration(listOf(GameModule.Grid, GameModule.Vibration), GameSettings(2, 3, 1500, 15))
 }
 
 /**
@@ -28,12 +31,11 @@ enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
  *
  * @see[GameEngine]
  */
-enum class GameModule(@param:StringRes val type: Int) {
-    Grid(R.string.grid_game),
-    Piano(R.string.sound_game),
-    Colour(R.string.colour_game),
-    Vibration(R.string.vibration_game),
-    ;
+enum class GameModule {
+    Grid,
+    Piano,
+    Colour,
+    Vibration;
 
     /**
      * Create a new game engine of the current enum entry.
@@ -44,7 +46,17 @@ enum class GameModule(@param:StringRes val type: Int) {
         Grid -> GridEngine(recallsBack, repeatChance)
         Piano -> SoundGameEngine(recallsBack, repeatChance)
         Colour -> TODO()
-        Vibration -> TODO()
+        Vibration -> GlobalContext.get().get {
+            parametersOf(
+                (100..1000).map {
+                    Vibration(1) {
+                        vibration(it)
+                    }
+                },
+                recallsBack,
+                repeatChance,
+            )
+        }
     }
 
     /**
@@ -55,10 +67,11 @@ enum class GameModule(@param:StringRes val type: Int) {
      * TODO: might be better to include this with the enum. That, or remove the string res from the
      *  enums and make a toString function
      */
-    @DrawableRes fun toGameIconRes(): Int = when (this) {
-        Grid -> R.drawable.grid_game_icon
-        Piano -> R.drawable.piano_game_icon
-        Colour -> TODO()
-        Vibration -> TODO()
-    }
+    val gameIconRes: Int
+        @DrawableRes get() = when (this) {
+            Grid -> R.drawable.grid_game_icon
+            Piano -> R.drawable.piano_game_icon
+            Colour -> TODO()
+            Vibration -> R.drawable.vibration_svgrepo_com
+        }
 }

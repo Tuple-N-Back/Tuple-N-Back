@@ -8,7 +8,7 @@ import android.util.Log
 class SoundGameEngine(recallsBack: Int, repeatChance: Int) : GameEngine(recallsBack, repeatChance) {
     override val gameButtonText = "Sound"
 
-    override fun genNewMnemonic(forbidden: List<Int?>): Int = keys.indices.filterNot { forbidden.contains(it) }.random()
+    override fun genNewMnemonic(forbidden: List<Int>): Int = keys.indices.filterNot { forbidden.contains(it) }.random()
 
     companion object {
         val keys = Array(24) { i ->

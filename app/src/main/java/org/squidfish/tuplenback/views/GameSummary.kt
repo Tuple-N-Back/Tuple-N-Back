@@ -44,7 +44,9 @@ fun GameSummaryScreen(
     Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
             items(sortedStats) { (game, stat) ->
-                StatCard(Modifier.fillMaxWidth().padding(bottom = 12.dp), game, stat)
+                StatCard(Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp), game, stat)
             }
         }
 
@@ -102,9 +104,11 @@ fun StatCard(
             modifier = Modifier.padding(bottom = 8.dp, top = 8.dp, start = 8.dp),
         ) {
             Icon(
-                imageVector = ImageVector.vectorResource(game.toGameIconRes()),
+                imageVector = ImageVector.vectorResource(game.gameIconRes),
                 contentDescription = "$game",
-                modifier = Modifier.size(40.dp).padding(top = 2.dp),
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(top = 2.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
 
@@ -130,7 +134,9 @@ fun StatCard(
 @Composable
 private fun StatRow(name: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
