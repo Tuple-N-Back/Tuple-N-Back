@@ -24,10 +24,10 @@ class Vibration private constructor(
         if (timings.size % 2 == 0) {
             timings.add(timeToAdd)
         } else {
-            timings.add(timings.drop(1).single() + timeToAdd)
+            timings.add(timings.removeAt(timings.lastIndex) + timeToAdd)
         }
 
-        timeLeftMillis == timeToAdd
+        timeLeftMillis -= timeToAdd
     }
 
     fun pause(timeMillis: Int) {
@@ -37,7 +37,7 @@ class Vibration private constructor(
         val timeToAdd = min(timeMillis, timeLeftMillis)
 
         if (timings.size % 2 == 0) {
-            timings.add(timings.drop(1).single() + timeToAdd)
+            timings.add(timings.removeAt(timings.lastIndex) + timeToAdd)
         } else {
             timings.add(timeToAdd)
         }
