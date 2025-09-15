@@ -22,7 +22,7 @@ import org.squidfish.tuplenback.games.engines.SoundGameEngine
 enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
     GridPiano(listOf(GameModule.Grid, GameModule.Piano), GameSettings(2, 3, 1500, 15)),
     Grid(listOf(GameModule.Grid), GameSettings(2, 3, 1500, 20)),
-    GridVibration(listOf(GameModule.Grid, GameModule.Vibration), GameSettings(2, 3, 1500, 15))
+    GridVibration(listOf(GameModule.Grid, GameModule.Vibration), GameSettings(2, 3, 1500, 15)),
 }
 
 /**

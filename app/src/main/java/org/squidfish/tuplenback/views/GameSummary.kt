@@ -43,10 +43,14 @@ fun GameSummaryScreen(
 
     Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxHeight()) {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
-            items(sortedStats) { (game, stat) ->
-                StatCard(Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp), game, stat)
+            items(sortedStats) { (game, stats) ->
+                StatCard(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    game,
+                    stats,
+                )
             }
         }
 

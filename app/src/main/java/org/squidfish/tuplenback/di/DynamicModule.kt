@@ -9,7 +9,7 @@ val dynamicModule = module {
             vibrator = get(),
             vibrations = it.get(),
             recallsBack = it[1],
-            repeatChance = it[2]
+            repeatChance = it[2],
         )
     }
 }
