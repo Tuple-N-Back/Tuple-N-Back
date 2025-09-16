@@ -15,7 +15,7 @@ class VibrationTests {
         }
 
         // Then
-        assertEquals(listOf(600L), vibration.getTimings())
+        assertEquals(listOf(0L, 600L), vibration.getTimings())
     }
 
     @Test
@@ -31,7 +31,7 @@ class VibrationTests {
         }
 
         // Then
-        assertEquals(listOf(100L, 600L), vibration.getTimings())
+        assertEquals(listOf(0L, 100L, 600L), vibration.getTimings())
     }
 
     @Test
@@ -48,7 +48,7 @@ class VibrationTests {
         }
 
         // Then
-        assertEquals(listOf(200L), vibration.getTimings())
+        assertEquals(listOf(0L, 200L), vibration.getTimings())
     }
 
     @Test
@@ -63,6 +63,19 @@ class VibrationTests {
         }
 
         // Then
-        assertEquals(listOf(200L, 100L, 200L), vibration.getTimings())
+        assertEquals(listOf(0L, 200L, 100L, 200L), vibration.getTimings())
+    }
+
+    @Test
+    fun `delaying a vibration is handled correctly`() {
+        // Given
+        val vibration = Vibration(1000) {
+            // When
+            pause(500)
+            vibration(200)
+        }
+
+        // Then
+        assertEquals(listOf(500L, 200L), vibration.getTimings())
     }
 }
