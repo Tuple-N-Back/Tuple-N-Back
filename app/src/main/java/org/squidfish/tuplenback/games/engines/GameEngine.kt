@@ -41,6 +41,8 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
 
     abstract fun onNewRound(mnemonicId: Int)
 
+    open fun onGameEnd() {}
+
     /**
      * Determine if the next generated mnemonic should be a repeat
      * @return [repeatChance]% chance of returning True

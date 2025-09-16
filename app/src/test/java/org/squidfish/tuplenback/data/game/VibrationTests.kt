@@ -2,6 +2,7 @@ package org.squidfish.tuplenback.data.game
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.squidfish.tuplenback.data.game.engine.Vibration
 
 class VibrationTests {
     @Test

@@ -1,4 +1,4 @@
-package org.squidfish.tuplenback.data.game
+package org.squidfish.tuplenback.data.game.engine
 
 import android.os.Build
 import android.os.VibrationEffect

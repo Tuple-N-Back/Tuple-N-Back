@@ -67,11 +67,11 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
      * @see[AppEvent]
      */
     fun onEvent(event: AppEvent) = when (event) {
-        is AppEvent.PlayAgain -> {
+        AppEvent.PlayAgain -> {
             Log.i(TAG, "Playing again")
             playAgain()
         }
-        is AppEvent.ResetGameState -> {
+        AppEvent.ResetGameState -> {
             Log.i(TAG, "Resetting game state")
             resetGameState()
         }
@@ -81,15 +81,19 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
                 Log.e(TAG, it.toString())
             }
         }
-        is AppEvent.AbortOngoingGame -> {
+        AppEvent.AbortOngoingGame -> {
             Log.i(TAG, "Aborting game")
             abortGame()
+            gameEngines.values.forEach { it.onGameEnd() }
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
             startGame(event.game).onError {
                 Log.e(TAG, it.toString())
             }
+        }
+        AppEvent.FinishGame -> {
+            gameEngines.values.forEach { it.onGameEnd() }
         }
     }
 

@@ -50,6 +50,7 @@ fun TupleNBackApp(
                 GameScreen(
                     modifier = Modifier,
                     onFinnish = {
+                        gameModel.onEvent(AppEvent.FinishGame)
                         (backStackEntry.game ?: gameModel.game)?.let {
                             navController.navigate(ScreenDestination.SummaryScreen(game = it))
                         }
