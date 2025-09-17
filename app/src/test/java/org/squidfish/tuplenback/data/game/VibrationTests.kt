@@ -6,13 +6,13 @@ import org.squidfish.tuplenback.data.game.engine.Vibration
 
 class VibrationTests {
     @Test
-    fun `using consecutive vibration multiple times merges them into one vibration`() {
+    fun `using consecutive vibrate calls merges them into one vibration`() {
         // Given
         val vibration = Vibration(1000) {
             // When
-            vibration(100)
-            vibration(200)
-            vibration(300)
+            vibrate(100)
+            vibrate(200)
+            vibrate(300)
         }
 
         // Then
@@ -20,10 +20,10 @@ class VibrationTests {
     }
 
     @Test
-    fun `using consecutive pause multiple times merges them into one vibration`() {
+    fun `using consecutive pause calls merges them into one pause`() {
         // Given
         val vibration = Vibration(1000) {
-            vibration(100)
+            vibrate(100)
 
             // When
             pause(100)
@@ -36,16 +36,16 @@ class VibrationTests {
     }
 
     @Test
-    fun `vibration and pause have no effect when entire vibration takes maxTime`() {
+    fun `vibrate and pause have no effect when entire vibration takes maxTime`() {
         // Given
         val vibration = Vibration(200) {
-            vibration(200)
+            vibrate(200)
 
             // When
             pause(100)
-            vibration(300)
+            vibrate(300)
             pause(200)
-            vibration(500)
+            vibrate(500)
         }
 
         // Then
@@ -56,11 +56,11 @@ class VibrationTests {
     fun `exceeding maxTime for a vibration adds valid amount to meet maxTime limit`() {
         // Given
         val vibration = Vibration(500) {
-            vibration(200)
+            vibrate(200)
             pause(100)
 
             // When
-            vibration(500)
+            vibrate(500)
         }
 
         // Then
@@ -73,7 +73,7 @@ class VibrationTests {
         val vibration = Vibration(1000) {
             // When
             pause(500)
-            vibration(200)
+            vibrate(200)
         }
 
         // Then

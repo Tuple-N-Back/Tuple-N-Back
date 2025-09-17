@@ -35,7 +35,7 @@ class Vibration private constructor(
      * @param timeMillis The desired duration of the vibration in milliseconds.
      *                   This value will be clamped if the pattern will exceed `maxTimeMillis`.
      */
-    fun vibration(timeMillis: Int) {
+    fun vibrate(timeMillis: Int) {
         if (timeLeftMillis == 0) return
 
         val timeToAdd = min(timeMillis, timeLeftMillis)
@@ -87,7 +87,7 @@ class VibrationEngine(
     override fun onNewRound(mnemonicId: Int) = playVibration(vibrations[mnemonicId])
 
     private fun playVibration(vibration: Vibration) {
-        val pattern = longArrayOf(*vibration.getTimings().toLongArray(), 0, 0)
+        val pattern = vibration.getTimings().toLongArray() + longArrayOf(0, 0)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(
