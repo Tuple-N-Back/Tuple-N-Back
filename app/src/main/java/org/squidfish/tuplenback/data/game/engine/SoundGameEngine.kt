@@ -9,7 +9,7 @@ import org.squidfish.tuplenback.games.engines.GameEngine
 class SoundGameEngine(
     private val application: Application,
     private var player: MediaPlayer,
-    @param:RawRes private val sounds: List<Int>,
+    @field:RawRes private val sounds: List<Int>,
     recallsBack: Int,
     repeatChance: Int,
 ) : GameEngine(recallsBack, repeatChance) {

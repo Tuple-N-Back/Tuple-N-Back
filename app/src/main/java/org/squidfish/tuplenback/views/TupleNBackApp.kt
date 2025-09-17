@@ -62,7 +62,7 @@ fun TupleNBackApp(
                     },
                     onGuess = { module: GameModule -> gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module)) },
                     state = gameModel.gameState.collectAsState().value,
-                    game = backStackEntry.game ?: gameModel.game ?: throw IllegalStateException("Game cannot be null"),
+                    game = backStackEntry.game ?: gameModel.game ?: error("Game cannot be null"),
                 )
             }
             composable<ScreenDestination.SummaryScreen> { backStackEntry ->

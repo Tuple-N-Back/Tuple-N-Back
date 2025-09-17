@@ -1,0 +1,193 @@
+complexity:
+  CognitiveComplexMethod:
+    active: true
+  ComplexInterface:
+    active: true
+  LongMethod:
+    ignoreAnnotated:
+      - "Composable"
+  LongParameterList:
+    ignoreAnnotated:
+      - "Composable"
+  MethodOverloading:
+    active: true
+  NamedArguments:
+    active: true
+  NestedScopeFunctions:
+    active: true
+  StringLiteralDuplication:
+    active: true
+  TooManyFunctions:
+    thresholdInFiles: 16
+    thresholdInClasses: 16
+    thresholdInObjects: 16
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  SuspendFunSwallowedCancellation:
+    active: true
+  SuspendFunWithCoroutineScopeReceiver:
+    active: true
+
+empty-blocks:
+  EmptyFunctionBlock:
+    ignoreOverridden: true
+
+exceptions:
+  ObjectExtendsThrowable:
+    active: true
+
+naming:
+  FunctionMaxLength:
+    active: true
+  FunctionMinLength:
+    active: true
+  FunctionNaming:
+    ignoreAnnotated:
+      - "Composable"
+  LambdaParameterNaming:
+    active: true
+  NonBooleanPropertyPrefixedWithIs:
+    active: true
+  VariableMaxLength:
+    active: true
+  VariableMinLength:
+    active: true
+
+performance:
+  CouldBeSequence:
+    active: true
+  UnnecessaryPartOfBinaryExpression:
+    active: true
+
+potential-bugs:
+  CastNullableToNonNullableType:
+    active: true
+  CastToNullableType:
+    active: true
+  Deprecation:
+    active: true
+  DontDowncastCollectionTypes:
+    active: true
+  ImplicitUnitReturnType:
+    active: true
+  LateinitUsage:
+    active: true
+  MissingPackageDeclaration:
+    active: true
+  NullCheckOnMutableProperty:
+    active: true
+  NullableToStringCall:
+    active: true
+  PropertyUsedBeforeDeclaration:
+    active: true
+  UnconditionalJumpStatementInLoop:
+    active: true
+  UnnecessaryNotNullCheck:
+    active: true
+
+style:
+  AlsoCouldBeApply:
+    active: true
+  BracesOnIfStatements:
+    active: true
+  BracesOnWhenStatements:
+    active: true
+    multiLine: "necessary"
+  CanBeNonNullable:
+    active: true
+  CascadingCallWrapping:
+    active: true
+  ClassOrdering:
+    active: true
+  CollapsibleIfStatements:
+    active: true
+  DataClassContainsFunctions:
+    active: true
+  DataClassShouldBeImmutable:
+    active: true
+  DoubleNegativeLambda:
+    active: true
+  EqualsOnSignatureLine:
+    active: true
+  ExplicitCollectionElementAccessMethod:
+    active: true
+  ExpressionBodySyntax:
+    active: true
+  ForbiddenAnnotation:
+    active: true
+  ForbiddenComment:
+    active: false
+  ForbiddenMethodCall:
+    active: true
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreRanges: true
+  MandatoryBracesLoops:
+    active: true
+  MaxChainedCallsOnSameLine:
+    active: true
+  MultilineLambdaItParameter:
+    active: true
+  MultilineRawStringIndentation:
+    active: true
+  NoTabs:
+    active: true
+  NullableBooleanCheck:
+    active: true
+  OptionalUnit:
+    active: true
+  PreferToOverPairSyntax:
+    active: true
+  RedundantExplicitType:
+    active: true
+  RedundantVisibilityModifierRule:
+    active: true
+  ReturnCount:
+    active: false
+  SpacingBetweenPackageAndImports:
+    active: true
+  StringShouldBeRawString:
+    active: true
+  TrailingWhitespace:
+    active: true
+  TrimMultilineRawString:
+    active: true
+  UnderscoresInNumericLiterals:
+    active: true
+  UnnecessaryAnnotationUseSiteTarget:
+    active: true
+  UnnecessaryBackticks:
+    active: true
+  UnnecessaryBracesAroundTrailingLambda:
+    active: true
+  UnnecessaryInnerClass:
+    active: true
+  UnnecessaryLet:
+    active: true
+  UnnecessaryParentheses:
+    active: true
+  UntilInsteadOfRangeTo:
+    active: true
+  UnusedImports:
+    active: true
+  UnusedPrivateMember:
+    ignoreAnnotated:
+      - "Preview"
+      - "PreviewScreenSizes"
+      - "PreviewFontScale"
+      - "PreviewLightDark"
+      - "PreviewDynamicColors"
+  UseDataClass:
+    active: true
+  UseEmptyCounterpart:
+    active: true
+  UseIfEmptyOrIfBlank:
+    active: true
+  UseIfInsteadOfWhen:
+    active: true
+  UseLet:
+    active: true
+  UseSumOfInsteadOfFlatMapSize:
+    active: true

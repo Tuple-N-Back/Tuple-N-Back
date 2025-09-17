@@ -92,9 +92,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
                 Log.e(TAG, it.toString())
             }
         }
-        AppEvent.FinishGame -> {
-            gameEngines.values.forEach { it.onGameEnd() }
-        }
+        AppEvent.FinishGame -> gameEngines.values.forEach { it.onGameEnd() }
     }
 
     /**

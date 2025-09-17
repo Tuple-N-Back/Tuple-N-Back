@@ -3,7 +3,7 @@ package org.squidfish.tuplenback.models
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.models.PlayerPerformanceStats
+import org.squidfish.tuplenback.models.RecallCheck.NONE
 
 /**
  * State of the ongoing game.
