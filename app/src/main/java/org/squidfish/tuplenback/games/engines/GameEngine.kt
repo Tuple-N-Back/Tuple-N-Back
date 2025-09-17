@@ -37,13 +37,17 @@ abstract class GameEngine(recallsBack: Int, private val repeatChance: Int) {
      *
      * @see[createNewState]
      */
-    protected abstract fun genNewMnemonic(forbidden: List<Int?> = emptyList()): Int
+    protected abstract fun genNewMnemonic(forbidden: List<Int> = emptyList()): Int
+
+    abstract fun onNewRound(mnemonicId: Int)
+
+    open fun onGameEnd() {}
 
     /**
      * Determine if the next generated mnemonic should be a repeat
      * @return [repeatChance]% chance of returning True
      */
-    private fun shouldRepeat(): Boolean = Random.Default.nextInt(1, 100) <= repeatChance
+    private fun shouldRepeat(): Boolean = Random.Default.nextInt(100) < repeatChance
 
     /**
      * Adds a new mnemonic to the mnemonic queue. Sets the [isRepeat] flag if a repeat has occurred.

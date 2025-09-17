@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.modules.GridGame
-import org.squidfish.tuplenback.games.modules.SoundGame
 import org.squidfish.tuplenback.models.GameState
 import org.squidfish.tuplenback.models.RecallCheck
 
@@ -86,7 +85,9 @@ fun GameScreen(
                     .fillMaxWidth(),
             ) {
                 RepeatGuessButtons(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     recallGuesses = state.recallCheck,
                     games = game.modules,
                     onGuess = { onGuess(it) }, // TODO: Investigate why `onGuess = onGuess` does not trigger the action
@@ -147,9 +148,8 @@ fun Games(mnems: Map<GameModule, Int>, games: List<GameModule>) {
 
         when (game) {
             GameModule.Grid -> GridGame(mnem)
-            GameModule.Piano -> SoundGame(mnem)
             GameModule.Colour -> TODO()
-            GameModule.Vibration -> TODO()
+            else -> Unit
         }
     }
 }

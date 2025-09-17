@@ -12,7 +12,7 @@ object LevelRepository : SearchRepository<GameSettings, LevelData> {
         GameSettings(
             recallsBack = key.level,
             totalRounds = 3,
-            milliPerRound = 1000,
+            millisPerRound = 1000,
             repeatChance = 50,
             timerUpdateInterval = 30,
         ),

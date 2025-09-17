@@ -67,11 +67,11 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
      * @see[AppEvent]
      */
     fun onEvent(event: AppEvent) = when (event) {
-        is AppEvent.PlayAgain -> {
+        AppEvent.PlayAgain -> {
             Log.i(TAG, "Playing again")
             playAgain()
         }
-        is AppEvent.ResetGameState -> {
+        AppEvent.ResetGameState -> {
             Log.i(TAG, "Resetting game state")
             resetGameState()
         }
@@ -81,15 +81,19 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
                 Log.e(TAG, it.toString())
             }
         }
-        is AppEvent.AbortOngoingGame -> {
+        AppEvent.AbortOngoingGame -> {
             Log.i(TAG, "Aborting game")
             abortGame()
+            gameEngines.values.forEach { it.onGameEnd() }
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
             startGame(event.game).onError {
                 Log.e(TAG, it.toString())
             }
+        }
+        AppEvent.FinishGame -> {
+            gameEngines.values.forEach { it.onGameEnd() }
         }
     }
 
@@ -153,7 +157,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         }
 
         game.modules.forEach {
-            gameEngines[it] = it.toGameEngine(game.settings.recallsBack, game.settings.repeatChance)
+            gameEngines[it] = it.toGameEngine(game.settings)
         }
 
         return Result.Success(Unit)
@@ -215,20 +219,22 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
      */
     private fun startNewRound(): Result<Unit, Error> {
         Log.d(TAG, "Starting new round")
-        _gameState.update { it.copy(currentRound = it.currentRound + 1) }
 
         Log.d(TAG, "Generating round mnemonics")
+        val mnemonicIds = gameState.value.mnemonicIds
         gameEngines.forEach { (game, gameEngine) ->
-            _gameState.update { it.apply { it.mnemonicIds[game] = gameEngine.createNewState() } }
+            mnemonicIds[game] = gameEngine.createNewState()
+            mnemonicIds[game]?.let { gameEngine.onNewRound(it) }
         }
+        _gameState.update { it.copy(currentRound = it.currentRound + 1, mnemonicIds = mnemonicIds) }
 
         val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
-            for (time in 0..game.settings.milliPerRound step game.settings.timerUpdateInterval) {
+            for (time in 0..game.settings.millisPerRound step game.settings.timerUpdateInterval) {
                 _gameState.update {
-                    it.copy(roundProgress = time.toFloat() / game.settings.milliPerRound)
+                    it.copy(roundProgress = time.toFloat() / game.settings.millisPerRound)
                 }
 
                 delay(game.settings.timerUpdateInterval)

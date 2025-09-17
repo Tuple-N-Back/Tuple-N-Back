@@ -11,22 +11,24 @@ sealed interface AppEvent {
     data object PlayAgain : AppEvent
 
     /**Clear the [GameState].*/
-    data object ResetGameState: AppEvent
+    data object ResetGameState : AppEvent
 
     /**Terminate a game before its end.*/
-    data object AbortOngoingGame: AppEvent
+    data object AbortOngoingGame : AppEvent
 
     /**
      * Start a new game.
      *
      * @param[game] the [Game] to start
      */
-    data class StartGame(val game: Game): AppEvent
+    data class StartGame(val game: Game) : AppEvent
 
     /**
      * Mak a guess, suggesting a mnemonic repeat happened for a game module.
      *
      * @param[gameMod] the game module that is guessed on.
      */
-    data class MakeMnemonicRepeatGuess(val gameMod: GameModule): AppEvent
+    data class MakeMnemonicRepeatGuess(val gameMod: GameModule) : AppEvent
+
+    data object FinishGame : AppEvent
 }

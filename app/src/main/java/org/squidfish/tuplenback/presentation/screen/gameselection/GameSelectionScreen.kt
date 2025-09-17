@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -40,6 +42,7 @@ import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import org.squidfish.tuplenback.games.Game
@@ -54,7 +57,7 @@ fun GameSelectionScreen(viewModel: GameSelectionViewModel, navController: NavCon
         when (event) {
             is GameSelectionEvent.StartGame -> {
                 // Temporary solution until we rework Game
-                val game = Game.entries.first { it.modules.joinToString(" ") == event.game.title }
+                val game = Game.entries.first { it.asModel == event.game }
                 navController.navigate(ScreenDestination.GameScreen(game))
             }
         }
@@ -108,7 +111,7 @@ fun GameSelectionScreen(
 }
 
 @Composable
-fun GameCard(
+private fun GameCard(
     game: GameModel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -132,20 +135,25 @@ fun GameCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
+                BasicText(
                     text = game.title,
                     style = MaterialTheme.typography.displaySmall,
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 16.sp,
+                        maxFontSize = 32.sp,
+                    ),
+                    modifier = Modifier.weight(1f),
                 )
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
-                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     game.icons.forEach { iconRes ->
                         Icon(
                             imageVector = ImageVector.vectorResource(iconRes),
                             contentDescription = null,
-                            modifier = Modifier.requiredSize(48.dp),
+                            modifier = Modifier.requiredSize(40.dp),
                         )
                     }
                 }

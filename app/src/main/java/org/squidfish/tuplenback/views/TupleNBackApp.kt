@@ -50,6 +50,7 @@ fun TupleNBackApp(
                 GameScreen(
                     modifier = Modifier,
                     onFinnish = {
+                        gameModel.onEvent(AppEvent.FinishGame)
                         (backStackEntry.game ?: gameModel.game)?.let {
                             navController.navigate(ScreenDestination.SummaryScreen(game = it))
                         }
@@ -61,7 +62,7 @@ fun TupleNBackApp(
                     },
                     onGuess = { module: GameModule -> gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module)) },
                     state = gameModel.gameState.collectAsState().value,
-                    game = gameModel.game ?: throw IllegalStateException("Game cannot be null"),
+                    game = backStackEntry.game ?: gameModel.game ?: throw IllegalStateException("Game cannot be null"),
                 )
             }
             composable<ScreenDestination.SummaryScreen> { backStackEntry ->

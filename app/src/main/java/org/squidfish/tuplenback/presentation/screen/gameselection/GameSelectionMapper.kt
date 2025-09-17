@@ -5,7 +5,7 @@ import org.squidfish.tuplenback.games.Game
 val Game.asModel
     get() = GameModel(
         title = modules.joinToString(" "),
-        icons = modules.map { it.toGameIconRes() },
+        icons = modules.map { it.gameIconRes },
         // TODO: fetch highestLvl and totalGames
         highestLevel = "Level: 3",
         totalGames = "Games: 10",
