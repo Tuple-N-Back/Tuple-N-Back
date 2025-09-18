@@ -1,5 +1,8 @@
 package org.squidfish.tuplenback.data.game
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import org.squidfish.tuplenback.data.game.levels.LevelRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.RecentRepository
@@ -9,7 +12,7 @@ import org.squidfish.tuplenback.utils.Result
 /**
  * Provides access to the Room database
  */
-class GameRepository(private val db: AppDatabase) : RecentRepository<GameModel> {
+class GameRepository(private val db: AppDatabase, val levelRepository: LevelRepository) : RecentRepository<GameModel> {
 
     override suspend fun getRecent(): Result<GameModel?, Error> {
         val recent = db.getGameStatsDao().getRecent(1)
@@ -17,7 +20,7 @@ class GameRepository(private val db: AppDatabase) : RecentRepository<GameModel> 
             return Result.Success(null)
         }
 
-        return recent.asGameModel
+        return recent.toGameModel(levelRepository)
     }
 
     override suspend fun insert(data: GameModel): Result<Unit, Error> = when (val stats = data.asGameStatsData) {

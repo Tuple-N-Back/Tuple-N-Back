@@ -45,7 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import org.squidfish.tuplenback.data.game.levels.LevelData
+import org.squidfish.tuplenback.data.game.levels.LevelRepository
 import org.squidfish.tuplenback.games.Game
+import org.squidfish.tuplenback.games.GameSettings
+import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
 import org.squidfish.tuplenback.presentation.util.ObserveAsEvents
 
@@ -58,7 +62,14 @@ fun GameSelectionScreen(viewModel: GameSelectionViewModel, navController: NavCon
             is GameSelectionEvent.StartGame -> {
                 // Temporary solution until we rework Game
                 val game = Game.entries.first { it.asModel == event.game }
-                navController.navigate(ScreenDestination.GameScreen(game))
+                //val settings = levelRepository.get(LevelData(game, event.game.currentLevel))
+                val settings = GameSettings(
+                    recallsBack = 2,
+                    totalRounds = 25,
+                    millisPerRound = 2500,
+                    repeatChance = 20,
+                )
+                navController.navigate(ScreenDestination.GameScreen(Level(game, settings)))
             }
         }
     }

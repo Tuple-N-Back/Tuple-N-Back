@@ -9,4 +9,5 @@ val Game.asModel
         // TODO: fetch highestLvl and totalGames
         highestLevel = "Level: 3",
         totalGames = "Games: 10",
+        currentLevel = 1,
     )

@@ -9,4 +9,5 @@ data class GameModel(
     @field:DrawableRes val icons: List<Int> = emptyList(),
     val highestLevel: String = "",
     val totalGames: String = "",
+    val currentLevel: Int = 1
 )

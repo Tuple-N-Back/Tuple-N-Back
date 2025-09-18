@@ -1,6 +1,7 @@
 package org.squidfish.tuplenback.data.game
 
 import org.squidfish.tuplenback.data.game.levels.LevelData
+import org.squidfish.tuplenback.data.game.levels.LevelRepository
 import org.squidfish.tuplenback.data.game.levels.asGameSettings
 import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.GameModule
@@ -10,8 +11,7 @@ import org.squidfish.tuplenback.utils.Error
 import org.squidfish.tuplenback.utils.Result
 import org.squidfish.tuplenback.utils.ValidationError
 
-val List<GameStatsData>.asGameModel: Result<GameModel, Error>
-    get() {
+fun List<GameStatsData>.toGameModel(levelRepository: LevelRepository): Result<GameModel, Error> {
         val first = firstOrNull() ?: return Result.Error(ValidationError.MissingGameStats)
 
         forEach { entry ->
@@ -34,11 +34,16 @@ val List<GameStatsData>.asGameModel: Result<GameModel, Error>
             )
         }
 
-        // FIXME
-        val gameSettings = when (val res = LevelData(first.gameType, first.level).asGameSettings) {
+        val gameSettings = when (val res = levelRepository.getFromCache(LevelData(first.gameType, first.level))) {
             is Result.Error -> return res
             is Result.Success -> res.data
         }
+
+
+        //val gameSettings = when (val res = LevelData(first.gameType, first.level).asGameSettings) {
+        //    is Result.Error -> return res
+        //    is Result.Success -> res.data
+        //}
 
         return Result.Success(
             GameModel(

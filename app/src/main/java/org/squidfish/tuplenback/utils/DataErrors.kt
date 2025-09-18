@@ -8,6 +8,8 @@ sealed interface ValidationError : DataError {
     object MissingGameStats : ValidationError
     object InconsistentGameStats : ValidationError
     object InconsistentGameData : ValidationError
+    object MissingGame : ValidationError
+    object MissingLevel : ValidationError
 }
 
 sealed interface LevelDeserializationError : ValidationError {
@@ -17,4 +19,5 @@ sealed interface LevelDeserializationError : ValidationError {
     object InvalidRoundTime : LevelDeserializationError
     object InvalidRepeatChance : LevelDeserializationError
     object LevelMismatch : LevelDeserializationError // Unordered levels json config
+    object IncompleteCache : LevelDeserializationError
 }

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
+import org.squidfish.tuplenback.games.GameSettings
+import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.utils.BadConfigurationError
 import org.squidfish.tuplenback.utils.Error
@@ -41,7 +43,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private var timerJob: Job? = null
 
     private val gameEngines = mutableMapOf<GameModule, GameEngine>()
-    var game: Game? = null
+    var level: Level? = null
         private set
 
     /**
@@ -54,7 +56,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         viewModelScope.launch {
 
             repository.getRecent().onSuccess {
-                it?.gameType?.let { prevGame -> game = prevGame }
+                it?.let { level = Level(it.level, it.gameType, it.gameSettings) }
             }.onError {
                 Log.e(TAG, "Cannot initialize ViewModel. Repository error: $it")
             }
@@ -88,7 +90,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
-            startGame(event.game).onError {
+            startGame(event.level).onError {
                 Log.e(TAG, it.toString())
             }
         }
@@ -105,7 +107,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
                     return@launch
                 }
 
-                startGame(it.gameType)
+                startGame(Level(it.level, it.gameType, it.gameSettings))
             }.onError {
                 Log.e(TAG, "Cannot play again. Repository error: $it")
             }
@@ -115,8 +117,8 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     /**
      * Starts a new game. Also handles all necessary initialization
      */
-    private fun startGame(game: Game): Result<Unit, Error> {
-        this.game = game
+    private fun startGame(level: Level): Result<Unit, Error> {
+        this.level = level
 
         gameEngines.clear()
 
@@ -148,14 +150,14 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private fun initGameEngines(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game engines")
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level ?: return Result.Error(BadConfigurationError.UnsetGame)
 
-        if (game.modules.isEmpty()) {
+        if (level.game.modules.isEmpty()) {
             return Result.Error(BadConfigurationError.MissingGameModules)
         }
 
-        game.modules.forEach {
-            gameEngines[it] = it.toGameEngine(game.settings)
+        level.game.modules.forEach {
+            gameEngines[it] = it.toGameEngine(level.settings)
         }
 
         return Result.Success(Unit)
@@ -167,9 +169,9 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private fun initGameState(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game state")
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level ?: return Result.Error(BadConfigurationError.UnsetGame)
 
-        game.modules.forEach { module ->
+        level.game.modules.forEach { module ->
             _gameState.update {
                 it.apply {
                     it.mnemonicIds[module] = 0
@@ -226,16 +228,16 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         }
         _gameState.update { it.copy(currentRound = it.currentRound + 1, mnemonicIds = mnemonicIds) }
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
-            for (time in 0..game.settings.millisPerRound step game.settings.timerUpdateInterval) {
+            for (time in 0..level.settings.millisPerRound step level.settings.timerUpdateInterval) {
                 _gameState.update {
-                    it.copy(roundProgress = time.toFloat() / game.settings.millisPerRound)
+                    it.copy(roundProgress = time.toFloat() / level.settings.millisPerRound)
                 }
 
-                delay(game.settings.timerUpdateInterval)
+                delay(level.settings.timerUpdateInterval)
             }
 
             endRound()
@@ -263,10 +265,10 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
             }
         }
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level= level ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         // end round or end game and get stats
-        if (_gameState.value.currentRound >= game.settings.totalRounds) {
+        if (_gameState.value.currentRound >= level.settings.totalRounds) {
             _gameState.update {
                 it.copy(gameOver = true)
             }
@@ -275,8 +277,8 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
             viewModelScope.launch {
                 repository.insert(
                     GameModel(
-                        gameType = game,
-                        gameSettings = game.settings,
+                        gameType = level.game,
+                        gameSettings = level.settings,
                         playerStats = playerStats,
                         gameEndTime = System.currentTimeMillis(),
                     ),

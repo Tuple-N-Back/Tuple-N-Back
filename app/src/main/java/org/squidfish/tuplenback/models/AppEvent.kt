@@ -1,7 +1,10 @@
 package org.squidfish.tuplenback.models
 
+import org.squidfish.tuplenback.data.game.levels.LevelData
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
+import org.squidfish.tuplenback.games.GameSettings
+import org.squidfish.tuplenback.games.Level
 
 /**
  * Events used to signal the view model
@@ -19,9 +22,9 @@ sealed interface AppEvent {
     /**
      * Start a new game.
      *
-     * @param[game] the [Game] to start
+     * @param[level] the [Level] to start
      */
-    data class StartGame(val game: Game) : AppEvent
+    data class StartGame(val level: LevelData) : AppEvent
 
     /**
      * Mak a guess, suggesting a mnemonic repeat happened for a game module.

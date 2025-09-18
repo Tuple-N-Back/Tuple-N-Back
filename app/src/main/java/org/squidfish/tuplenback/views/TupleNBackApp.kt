@@ -18,7 +18,10 @@ import androidx.navigation.compose.rememberNavController
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
 import org.squidfish.tuplenback.MainActivity
+import org.squidfish.tuplenback.data.game.levels.LevelData
+import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
+import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
@@ -45,14 +48,18 @@ fun TupleNBackApp(
                     Log.v(TAG, "Composed ${ScreenDestination.GameScreen::class}")
                 }
                 LaunchedEffect(Unit) {
-                    backStackEntry.game?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
+                    backStackEntry.level?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
                 }
                 GameScreen(
                     modifier = Modifier,
                     onFinnish = {
                         gameModel.onEvent(AppEvent.FinishGame)
-                        (backStackEntry.game ?: gameModel.game)?.let {
-                            navController.navigate(ScreenDestination.SummaryScreen(game = it))
+                        // TODO:
+                        //(backStackEntry.level?: gameModel.level)?.let {
+                        //    navController.navigate(ScreenDestination.SummaryScreen(level = it.gameMode))
+                        //}
+                        (gameModel.level)?.let {
+                            navController.navigate(ScreenDestination.SummaryScreen(level = LevelData(it.game, it.level)))
                         }
                     },
                     onAbort = {
@@ -62,7 +69,9 @@ fun TupleNBackApp(
                     },
                     onGuess = { module: GameModule -> gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module)) },
                     state = gameModel.gameState.collectAsState().value,
-                    game = backStackEntry.game ?: gameModel.game ?: error("Game cannot be null"),
+                    game = backStackEntry.level?.gameMode ?: gameModel.level?.game ?: error("Level cannot be null"),
+                    //totalRounds = backStackEntry.level?.settings?.totalRounds ?: gameModel.level?.settings?.totalRounds ?: error("Level cannot be null"),
+                    totalRounds = gameModel.level?.settings?.totalRounds ?: error("Level cannot be null"),
                 )
             }
             composable<ScreenDestination.SummaryScreen> { backStackEntry ->
@@ -72,8 +81,8 @@ fun TupleNBackApp(
                 GameSummaryScreen(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
-                        navController.navigate(ScreenDestination.GameScreen(game = null)) {
-                            popUpTo(ScreenDestination.GameScreen(game = backStackEntry.game)) { inclusive = true }
+                        navController.navigate(ScreenDestination.GameScreen(level = null)) {
+                            popUpTo(ScreenDestination.GameScreen(level = backStackEntry.level)) { inclusive = true }
                         }
 
                         gameModel.onEvent(AppEvent.ResetGameState)
@@ -105,12 +114,12 @@ fun TupleNBackApp(
                         navController.navigate(ScreenDestination.GameSelectionScreen)
                     },
                     onPlayRecent = {
-                        if (gameModel.game == null) {
+                        if (gameModel.level == null) {
                             Log.w(TAG, "Cannot play recent: No game played previously")
                             return@MainMenuScreen
                         }
 
-                        navController.navigate(ScreenDestination.GameScreen(game = null))
+                        navController.navigate(ScreenDestination.GameScreen(level = null))
                         gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},
