@@ -1,0 +1,23 @@
+{
+  "gameType": "GridVibration",
+  "levels": [
+    {
+      "level_id": 1,
+      "settings": {
+        "recallsBack": 2,
+        "totalRounds": 25,
+        "millisPerRound": 2500,
+        "repeatChance": 20
+      }
+    },
+    {
+      "level_id": 2,
+      "settings": {
+        "recallsBack": 3,
+        "totalRounds": 25,
+        "millisPerRound": 2500,
+        "repeatChance": 20
+      }
+    }
+  ]
+}

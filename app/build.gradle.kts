@@ -49,6 +49,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    sourceSets {
+        getByName("main") {
+            assets {
+                srcDirs("src/main/assets")
+            }
+        }
+    }
 }
 
 kotlin {
@@ -80,6 +87,7 @@ dependencies {
     implementation(libs.bundles.koin)
     api(libs.koin.annotations)
     ksp(libs.koin.ksp.compiler)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)

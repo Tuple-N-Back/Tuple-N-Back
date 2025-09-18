@@ -1,5 +1,7 @@
 package org.squidfish.tuplenback.data.game
 
+import org.squidfish.tuplenback.data.game.levels.LevelData
+import org.squidfish.tuplenback.data.game.levels.asGameSettings
 import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.GameModel
@@ -32,6 +34,7 @@ val List<GameStatsData>.asGameModel: Result<GameModel, Error>
             )
         }
 
+        // FIXME
         val gameSettings = when (val res = LevelData(first.gameType, first.level).asGameSettings) {
             is Result.Error -> return res
             is Result.Success -> res.data
