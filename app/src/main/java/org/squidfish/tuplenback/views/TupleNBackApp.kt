@@ -21,6 +21,7 @@ import kotlin.reflect.typeOf
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
 import org.squidfish.tuplenback.MainActivity
+import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.Level
@@ -28,9 +29,11 @@ import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
 import org.squidfish.tuplenback.presentation.navigation.AppNavTypes
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
-import org.squidfish.tuplenback.presentation.navigation.parcelableType
+//import org.squidfish.tuplenback.presentation.navigation.parcelableType
 import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionScreen
 import org.squidfish.tuplenback.presentation.util.composable
+import org.squidfish.tuplenback.utils.BadConfigurationError
+import org.squidfish.tuplenback.utils.Result
 
 private const val TAG = "TupleNBackApp"
 
@@ -50,7 +53,8 @@ fun TupleNBackApp(
             composable<ScreenDestination.GameScreen>(
                 typeMap = AppNavTypes.typeMap
             ) { backStackEntry ->
-                val level = backStackEntry.toRoute<LevelData?>()
+                val tempLvl = backStackEntry.toRoute<LevelData>()
+                val level = if (tempLvl.level != -1) tempLvl else null
 
                 SideEffect {
                     Log.v(TAG, "Composed ${ScreenDestination.GameScreen::class}")
@@ -64,9 +68,6 @@ fun TupleNBackApp(
                     modifier = Modifier,
                     onFinnish = {
                         gameModel.onEvent(AppEvent.FinishGame)
-                        //(backStackEntry.level?: gameModel.level)?.let {
-                        //    navController.navigate(ScreenDestination.SummaryScreen(level = it.gameMode))
-                        //}
                         level?.let {
                             navController.navigate(ScreenDestination.SummaryScreen(level))
                         }
@@ -94,7 +95,7 @@ fun TupleNBackApp(
                 GameSummaryScreen(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
-                        navController.navigate(ScreenDestination.GameScreen(level = null)) {
+                        navController.navigate(ScreenDestination.GameScreen(LevelData(level.gameMode, -1))) {
                             popUpTo(ScreenDestination.GameScreen(level = level)) { inclusive = true }
                         }
 
@@ -131,12 +132,13 @@ fun TupleNBackApp(
                         navController.navigate(ScreenDestination.GameSelectionScreen)
                     },
                     onPlayRecent = {
-                        if (gameModel.level.value == null) {
-                            Log.w(TAG, "Cannot play recent: No game played previously")
-                            return@MainMenuScreen
-                        }
+                        val level = gameModel.level.value.also {
+                            if (it == null) Log.w(TAG, "Cannot play recent: No game played previously")
+                        } ?: return@MainMenuScreen
 
-                        navController.navigate(ScreenDestination.GameScreen(level = null))
+
+                        // level = -1 is a marker for null!
+                        navController.navigate(ScreenDestination.GameScreen(LevelData(level.game, -1)))
                         gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},

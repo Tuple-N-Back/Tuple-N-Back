@@ -50,8 +50,6 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
 
     private val _level = MutableStateFlow<Level?>(null)
     val level: StateFlow<Level?> = _level.asStateFlow()
-    //var level: Level? = null
-        //private set
 
     /**
      * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
@@ -136,10 +134,14 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
      */
     private fun startGame(level: LevelData): Result<Unit, Error> {
         // TODO: Use a stateflow for start game status
+        Log.d(TAG, "Starting game")
         viewModelScope.launch {
             val settings = when (val res = levelRepository.get(level)) {
                 //is Result.Error -> return res
-                is Result.Error -> return@launch
+                is Result.Error -> {
+                    Log.e(TAG, "level repository error: $res")
+                    return@launch
+                }
                 is Result.Success -> res.data
             }
 
@@ -153,15 +155,18 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
 
             initGameEngines().onError {
                 //return Result.Error(it)
+                Log.e(TAG, "Game engine failure: $it")
                 return@launch
                 }
             initGameState().onError {
                 //return Result.Error(it)
+                Log.e(TAG, "Cannot initialize game state: $it")
                 return@launch
             }
 
             Log.i(TAG, "Starting game")
             startNewRound().onError {
+                Log.e(TAG, "Cannot start round: $it")
                 //return Result.Error(it)
                 return@launch
             }

@@ -41,14 +41,18 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
 
     // The first level is level 0
     override suspend fun get(key: LevelData): Result<GameSettings, Error> {
+        Log.d(TAG, "Retrieving level config for $key")
         levelCache[key.gameMode]?.let { return it.levels[key.level].asGameSettings }
+        Log.d(TAG, "Config is not in cache")
 
         val levelConfigFileName = "levels/${key.gameMode.name}.json"
         val levelsJson = context.assets.open(levelConfigFileName).bufferedReader().use {
             it.readText()
         }
 
+        Log.d(TAG, "Read json config file")
         val levelData: GameLevelData = Json.decodeFromString(levelsJson)
+        Log.d(TAG, "Decoded to GameLevelData")
 
         if (key.gameMode.name.lowercase() != levelData.gameType.lowercase()) {
             Log.e(TAG, "Invalid file/gamemode name")
@@ -60,6 +64,7 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
             return Result.Error(LevelDeserializationError.LevelMismatch)
         }
 
+        Log.d(TAG, "Putting in cache and returning")
         levelCache.put(key.gameMode, levelData)
         return levelData.levels[key.level].asGameSettings
     }
