@@ -21,13 +21,6 @@ class GameDataMapperTests {
             gameEndTime = 1,
             gameType = Game.GridPiano,
             level = 3,
-            gameSettings = GameSettings(
-                recallsBack = 3,
-                totalRounds = 3,
-                millisPerRound = 1000,
-                repeatChance = 50,
-                timerUpdateInterval = 30,
-            ),
             playerStats = mapOf(
                 GameModule.Grid to PlayerPerformanceStats(
                     correctRecalls = 1,
@@ -81,13 +74,6 @@ class GameDataMapperTests {
             gameEndTime = 1,
             gameType = Game.Grid,
             level = 3,
-            gameSettings = GameSettings(
-                recallsBack = 3,
-                totalRounds = 3,
-                millisPerRound = 1000,
-                repeatChance = 50,
-                timerUpdateInterval = 30,
-            ),
             playerStats = mapOf(
                 GameModule.Piano to PlayerPerformanceStats(
                     correctRecalls = 5,

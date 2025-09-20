@@ -21,50 +21,73 @@ import org.squidfish.tuplenback.utils.ValidationError
 import org.squidfish.tuplenback.utils.onError
 
 
-class LevelRepository(private val context: Context) : CachedSearchRepository<GameSettings, LevelData> {
+// TODO: write tests that check if the appropriate errors are returned when an invalid config is parsed
+// Maybe validate the json files independently of the level repository instead?
+
+/**
+ * Get level configuration for [Game]s.
+ *
+ * @param[context] Application context
+ * @param[configDirectory] A directory within assets where config files are looked for. Each config file should have the
+ * the same name as the game whose level it describes
+ * @param[autoInitCache] When true the content of all config files in [configDirectory] is automatically cached. See
+ * [initializeCache] and [getFromCache]
+ */
+class LevelRepository(
+    private val context: Context,
+    private val configDirectory: String = "levels",  // defaults to assets/levels/
+    private val autoInitCache: Boolean = false,
+) : CachedSearchRepository<GameSettings, LevelData> {
     private val TAG = "LevelRepository"
     private val levelCache = mutableMapOf<Game, GameLevelData>()
 
-    /**
-     * True if the level settings for all [Game]s have been loaded
-     */
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _cacheInitState = MutableStateFlow<CacheInitializationState>(CacheInitializationState.Uninitialized)
     val cacheInitState : StateFlow<CacheInitializationState> = _cacheInitState.asStateFlow()
 
     init {
-        // FIXME: isn't called?
-        repositoryScope.launch {
-            initializeCache()
+        if (autoInitCache) {
+            repositoryScope.launch {
+                initializeCache()
+            }
         }
     }
 
-    // The first level is level 0
+    /**
+     * Get the [GameSettings] corresponding to the correct [LevelData]. An error-free get results in the [GameSettings]
+     * of all levels being cached. The first level of a level should be passed as level 0.
+     */
     override suspend fun get(key: LevelData): Result<GameSettings, Error> {
-        Log.d(TAG, "Retrieving level config for $key")
-        levelCache[key.gameMode]?.let { return it.levels[key.level].asGameSettings }
-        Log.d(TAG, "Config is not in cache")
 
-        val levelConfigFileName = "levels/${key.gameMode.name}.json"
-        val levelsJson = context.assets.open(levelConfigFileName).bufferedReader().use {
-            it.readText()
+        if (key.level < 0) {
+            return Result.Error(LevelDeserializationError.NonexistentLevel)
         }
 
-        Log.d(TAG, "Read json config file")
-        val levelData: GameLevelData = Json.decodeFromString(levelsJson)
-        Log.d(TAG, "Decoded to GameLevelData")
+        levelCache[key.gameMode]?.let {
+            return if (it.levels.size > key.level) it.levels[key.level].asGameSettings else Result.Error(
+                LevelDeserializationError.NonexistentLevel)
+        }
 
-        if (key.gameMode.name.lowercase() != levelData.gameType.lowercase()) {
-            Log.e(TAG, "Invalid file/gamemode name")
-            return Result.Error(LevelDeserializationError.InvalidGameType)
+        val levelConfigFileName = "${configDirectory}/${key.gameMode.name}.json"
+        val levelsJson : String
+        try {
+            levelsJson = context.assets.open(levelConfigFileName).bufferedReader().use {
+                it.readText()
+            }
+        } catch (_: java.io.IOException) {
+            return Result.Error(LevelDeserializationError.MissingConfig)
+        }
+
+        val levelData: GameLevelData = Json.decodeFromString(levelsJson)
+
+        if (levelData.levels.size < key.level) {
+            return Result.Error(LevelDeserializationError.NonexistentLevel)
         }
 
         if (key.level != levelData.levels[key.level].levelId) {
-            Log.e(TAG, "Level mismatch")
             return Result.Error(LevelDeserializationError.LevelMismatch)
         }
 
-        Log.d(TAG, "Putting in cache and returning")
         levelCache.put(key.gameMode, levelData)
         return levelData.levels[key.level].asGameSettings
     }
@@ -77,7 +100,6 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
      */
     override fun getFromCache(key: LevelData): Result<GameSettings, Error> {
         if (cacheInitState.value != CacheInitializationState.Ready) {
-            Log.e(TAG, "Cache not initialized, status: ${cacheInitState.value}")
             return Result.Error(LevelDeserializationError.IncompleteCache)
         }
 
@@ -91,27 +113,27 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
     }
 
     /**
-     * Cache all the level settings in memory.
+     * Cache all the level settings in memory. If a configuration error is detected, change [cacheInitState] to
+     * [CacheInitializationState.Failed]. Missing game configuration files are ignored i.e. are not considered errors
      *
      * @see[cacheInitState]
      */
     override suspend fun initializeCache() {
-        Log.d(TAG, "Start initializing cache")
-        if (cacheInitState.value != CacheInitializationState.Uninitialized)
-            Log.e(TAG, "Cache already initialized, status: ${cacheInitState.value}")
+        if (cacheInitState.value != CacheInitializationState.Uninitialized) {
             return
+        }
 
         _cacheInitState.value = CacheInitializationState.Loading
 
         Game.entries.forEach {
             get(LevelData(it, 0)).onError {
-                _cacheInitState.value = CacheInitializationState.Failed(it)
-                Log.e(TAG, "Cache initialization error $it")
-                return@onError
+                if (it != LevelDeserializationError.MissingConfig) {
+                    _cacheInitState.value = CacheInitializationState.Failed(it)
+                    return@onError
+                }
             }
         }
 
-        Log.i(TAG, "Cache is initialized")
         _cacheInitState.value = CacheInitializationState.Ready
     }
 

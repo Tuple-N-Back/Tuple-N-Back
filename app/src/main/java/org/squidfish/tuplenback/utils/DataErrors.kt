@@ -1,7 +1,5 @@
 package org.squidfish.tuplenback.utils
 
-import java.util.logging.Level
-
 sealed interface DataError : Error
 
 sealed interface ValidationError : DataError {
@@ -13,11 +11,12 @@ sealed interface ValidationError : DataError {
 }
 
 sealed interface LevelDeserializationError : ValidationError {
-    object InvalidGameType : LevelDeserializationError
+    object MissingConfig : LevelDeserializationError
     object InvalidRecallsBack : LevelDeserializationError
     object TooFewRounds : LevelDeserializationError
     object InvalidRoundTime : LevelDeserializationError
     object InvalidRepeatChance : LevelDeserializationError
     object LevelMismatch : LevelDeserializationError // Unordered levels json config
+    object NonexistentLevel : LevelDeserializationError
     object IncompleteCache : LevelDeserializationError
 }

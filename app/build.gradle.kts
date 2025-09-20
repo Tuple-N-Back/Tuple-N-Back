@@ -53,8 +53,14 @@ android {
     sourceSets {
         getByName("main") {
             assets {
-                srcDirs("src/main/assets")
+                srcDirs("src/main/assets", "src/test/assets")
             }
+        }
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
         }
     }
 }
