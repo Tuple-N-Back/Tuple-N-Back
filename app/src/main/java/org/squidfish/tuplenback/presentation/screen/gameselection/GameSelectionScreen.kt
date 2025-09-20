@@ -63,7 +63,7 @@ fun GameSelectionScreen(viewModel: GameSelectionViewModel, navController: NavCon
                 // Temporary solution until we rework Game
                 val game = Game.entries.first { it.asModel == event.game }
 
-                navController.navigate(ScreenDestination.GameScreen(LevelData(game, event.game.currentLevel)))
+                navController.navigate(ScreenDestination.GameScreen(game, event.game.currentLevel))
             }
         }
     }

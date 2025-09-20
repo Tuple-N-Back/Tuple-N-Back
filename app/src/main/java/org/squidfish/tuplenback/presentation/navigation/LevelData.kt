@@ -5,6 +5,5 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.squidfish.tuplenback.games.Game
 
-@Serializable
 @Parcelize
 data class LevelData(val gameMode: Game, val level: Int) : Parcelable
