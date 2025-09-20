@@ -34,7 +34,7 @@ private const val TAG = "GameViewModel"
  * @property[_gameState] [gameState], but mutable and used internally
  * @property[timerJob] Timer, used to count when a round will end in a game.
  * @property[gameEngines] List of game engines for the current [Game].
- * @property[game] The type of [Game] that is being played.
+ * @property[level] The data for the [Game] that is being played.
  *
  * @see[AppEvent]
  */
@@ -60,7 +60,6 @@ class GameViewModel(
 
     init {
         viewModelScope.launch {
-
             gameRepository.getRecent().onSuccess {
                 it?.let {
                     val settings = when (val res = levelRepository.get(it.asLevelData)) {
@@ -106,9 +105,8 @@ class GameViewModel(
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
-            startGame(event.level).onError {
-                Log.e(TAG, it.toString())
-            }
+            // TODO: Use a stateflow for start game status (and thus error handling) if necessary
+            startGame(event.level)
         }
         AppEvent.FinishGame -> gameEngines.values.forEach { it.onGameEnd() }
     }
@@ -123,7 +121,7 @@ class GameViewModel(
                     return@launch
                 }
 
-                startGame(LevelData(it.gameType, it.level))
+                startGame(it.asLevelData)
             }.onError {
                 Log.e(TAG, "Cannot play again. Repository error: $it")
             }
@@ -133,9 +131,7 @@ class GameViewModel(
     /**
      * Starts a new game. Also handles all necessary initialization
      */
-    private fun startGame(level: LevelData): Result<Unit, Error> {
-        // TODO: Use a stateflow for start game status
-        Log.d(TAG, "Starting game")
+    private fun startGame(level: LevelData) {
         viewModelScope.launch {
             val settings = when (val res = levelRepository.get(level)) {
                 is Result.Error -> {
@@ -154,12 +150,10 @@ class GameViewModel(
             gameEngines.clear()
 
             initGameEngines().onError {
-                // return Result.Error(it)
                 Log.e(TAG, "Game engine failure: $it")
                 return@launch
             }
             initGameState().onError {
-                // return Result.Error(it)
                 Log.e(TAG, "Cannot initialize game state: $it")
                 return@launch
             }
@@ -167,11 +161,9 @@ class GameViewModel(
             Log.i(TAG, "Starting game")
             startNewRound().onError {
                 Log.e(TAG, "Cannot start round: $it")
-                // return Result.Error(it)
                 return@launch
             }
         }
-        return Result.Success(Unit)
     }
 
     /**

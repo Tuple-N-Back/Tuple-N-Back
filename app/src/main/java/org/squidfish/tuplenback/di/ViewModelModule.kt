@@ -9,6 +9,7 @@ import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionV
 
 @Module
 class ViewModelModule {
+    // FIXME: ktlint disagrees with every other way to write this
     @KoinViewModel
     fun createGameViewModel(gameRepository: GameRepository, levelRepository: LevelRepository): GameViewModel =
         GameViewModel(gameRepository, levelRepository)

@@ -52,7 +52,7 @@ class LevelRepository(
 
     /**
      * Get the [GameSettings] corresponding to the correct [LevelData]. An error-free get results in the [GameSettings]
-     * of all levels being cached. The first level of a level should be passed as level 0.
+     * of all levels being cached. The first level of a game should be passed as level 0.
      */
     override suspend fun get(key: LevelData): Result<GameSettings, Error> {
         if (key.level < 0) {
@@ -60,10 +60,10 @@ class LevelRepository(
         }
 
         levelCache[key.gameMode]?.let {
-            return if (it.levels.size > key.level) {
-                it.levels[key.level].asGameSettings
-            } else {
+            return if (it.levels.size <= key.level) {
                 Result.Error(LevelDeserializationError.NonexistentLevel)
+            } else {
+                it.levels[key.level].asGameSettings
             }
         }
 
@@ -104,7 +104,7 @@ class LevelRepository(
 
         val gameLevelData = levelCache[key.gameMode] ?: return Result.Error(ValidationError.MissingLevel)
 
-        if (gameLevelData.levels.size < key.level) {
+        if (gameLevelData.levels.size <= key.level) {
             return Result.Error(ValidationError.MissingLevel)
         }
 

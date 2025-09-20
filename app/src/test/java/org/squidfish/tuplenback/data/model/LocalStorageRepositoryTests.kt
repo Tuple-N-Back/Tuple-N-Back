@@ -8,6 +8,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 import org.robolectric.RobolectricTestRunner
 import org.squidfish.tuplenback.data.game.GameRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
@@ -38,6 +39,7 @@ class LocalStorageRepositoryTests {
         if (::db.isInitialized) {
             db.close()
         }
+        stopKoin()
     }
 
     @Test

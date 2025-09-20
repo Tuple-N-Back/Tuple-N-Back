@@ -1,6 +1,6 @@
 package org.squidfish.tuplenback
 
-import java.util.*
+import java.util.LinkedList
 
 /**
  * A queue data structure that can only have [maxSize] elements enqueued at a time

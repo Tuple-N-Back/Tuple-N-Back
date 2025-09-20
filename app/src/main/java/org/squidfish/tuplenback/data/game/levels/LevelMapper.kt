@@ -29,7 +29,6 @@ val GameLevel.asGameSettings: Result<GameSettings, Error>
                 totalRounds = settings.totalRounds,
                 millisPerRound = settings.millisPerRound,
                 repeatChance = settings.repeatChance,
-                timerUpdateInterval = 30,
             ),
         )
     }

@@ -10,6 +10,12 @@ import org.squidfish.tuplenback.data.game.engine.VibrationEngine
 import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.games.engines.GridEngine
 
+/**
+ * Contains all the necessary game data
+ *
+ * @see[Game]
+ * @see[GameSettings]
+ */
 data class Level(
     val level: Int,
     val game: Game,

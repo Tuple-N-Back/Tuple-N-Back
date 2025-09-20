@@ -1,8 +1,5 @@
 package org.squidfish.tuplenback.presentation.navigation
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.squidfish.tuplenback.games.Game
 
-@Parcelize
-data class LevelData(val gameMode: Game, val level: Int) : Parcelable
+data class LevelData(val gameMode: Game, val level: Int)

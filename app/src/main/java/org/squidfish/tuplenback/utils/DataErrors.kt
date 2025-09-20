@@ -6,7 +6,6 @@ sealed interface ValidationError : DataError {
     object MissingGameStats : ValidationError
     object InconsistentGameStats : ValidationError
     object InconsistentGameData : ValidationError
-    object MissingGame : ValidationError
     object MissingLevel : ValidationError
 }
 

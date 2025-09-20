@@ -44,9 +44,7 @@ fun TupleNBackApp(
         ) {
             composable<ScreenDestination.GameScreen> { backStackEntry ->
 
-                val level = if (backStackEntry.game !=
-                    null
-                ) {
+                val level = if (backStackEntry.game != null) {
                     LevelData(backStackEntry.game, backStackEntry.level)
                 } else {
                     null
@@ -57,7 +55,7 @@ fun TupleNBackApp(
                 }
 
                 LaunchedEffect(Unit) {
-                    level?.let { gameModel.onEvent(AppEvent.StartGame(level)) }
+                    level?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
                 }
 
                 GameScreen(
@@ -65,7 +63,7 @@ fun TupleNBackApp(
                     onFinnish = {
                         gameModel.onEvent(AppEvent.FinishGame)
                         level?.let {
-                            navController.navigate(ScreenDestination.SummaryScreen(level.gameMode, level.level))
+                            navController.navigate(ScreenDestination.SummaryScreen(it.gameMode, it.level))
                             return@GameScreen
                         }
                         gameModel.level.value?.let {
@@ -93,7 +91,7 @@ fun TupleNBackApp(
                 GameSummaryScreen(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
-                        navController.navigate(ScreenDestination.GameScreen(null, -1)) {
+                        navController.navigate(ScreenDestination.GameScreen(null, 0)) {
                             popUpTo(ScreenDestination.GameScreen(level.gameMode, level.level)) { inclusive = true }
                         }
 
@@ -131,7 +129,7 @@ fun TupleNBackApp(
                             return@MainMenuScreen
                         }
 
-                        navController.navigate(ScreenDestination.GameScreen(null, -1))
+                        navController.navigate(ScreenDestination.GameScreen(null, 0))
                         gameModel.onEvent(AppEvent.PlayAgain)
                     },
                     onSettings = {},
