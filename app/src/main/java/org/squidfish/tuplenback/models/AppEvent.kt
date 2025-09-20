@@ -1,6 +1,6 @@
 package org.squidfish.tuplenback.models
 
-import org.squidfish.tuplenback.data.game.levels.LevelData
+import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.GameSettings

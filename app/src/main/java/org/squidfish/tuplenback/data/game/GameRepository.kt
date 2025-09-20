@@ -12,7 +12,7 @@ import org.squidfish.tuplenback.utils.Result
 /**
  * Provides access to the Room database
  */
-class GameRepository(private val db: AppDatabase, val levelRepository: LevelRepository) : RecentRepository<GameModel> {
+class GameRepository(private val db: AppDatabase) : RecentRepository<GameModel> {
 
     override suspend fun getRecent(): Result<GameModel?, Error> {
         val recent = db.getGameStatsDao().getRecent(1)
@@ -20,7 +20,7 @@ class GameRepository(private val db: AppDatabase, val levelRepository: LevelRepo
             return Result.Success(null)
         }
 
-        return recent.toGameModel(levelRepository)
+        return recent.asGameModel
     }
 
     override suspend fun insert(data: GameModel): Result<Unit, Error> = when (val stats = data.asGameStatsData) {

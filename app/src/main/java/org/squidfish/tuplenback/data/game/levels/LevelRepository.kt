@@ -1,6 +1,7 @@
 package org.squidfish.tuplenback.data.game.levels
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -12,6 +13,7 @@ import kotlinx.serialization.json.Json
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameSettings
 import org.squidfish.tuplenback.models.CachedSearchRepository
+import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.utils.Error
 import org.squidfish.tuplenback.utils.LevelDeserializationError
 import org.squidfish.tuplenback.utils.Result
@@ -20,22 +22,24 @@ import org.squidfish.tuplenback.utils.onError
 
 
 class LevelRepository(private val context: Context) : CachedSearchRepository<GameSettings, LevelData> {
+    private val TAG = "LevelRepository"
     private val levelCache = mutableMapOf<Game, GameLevelData>()
 
     /**
      * True if the level settings for all [Game]s have been loaded
      */
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _cacheInitState = MutableStateFlow<CacheInitializationState>(CacheInitializationState.Loading)
+    private val _cacheInitState = MutableStateFlow<CacheInitializationState>(CacheInitializationState.Uninitialized)
     val cacheInitState : StateFlow<CacheInitializationState> = _cacheInitState.asStateFlow()
 
     init {
+        // FIXME: isn't called?
         repositoryScope.launch {
             initializeCache()
         }
     }
 
-    // The first level should be level 0
+    // The first level is level 0
     override suspend fun get(key: LevelData): Result<GameSettings, Error> {
         levelCache[key.gameMode]?.let { return it.levels[key.level].asGameSettings }
 
@@ -47,10 +51,12 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
         val levelData: GameLevelData = Json.decodeFromString(levelsJson)
 
         if (key.gameMode.name.lowercase() != levelData.gameType.lowercase()) {
+            Log.e(TAG, "Invalid file/gamemode name")
             return Result.Error(LevelDeserializationError.InvalidGameType)
         }
 
         if (key.level != levelData.levels[key.level].levelId) {
+            Log.e(TAG, "Level mismatch")
             return Result.Error(LevelDeserializationError.LevelMismatch)
         }
 
@@ -65,7 +71,8 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
      * @see[cacheInitState]
      */
     override fun getFromCache(key: LevelData): Result<GameSettings, Error> {
-        if (cacheInitState != CacheInitializationState.Ready) {
+        if (cacheInitState.value != CacheInitializationState.Ready) {
+            Log.e(TAG, "Cache not initialized, status: ${cacheInitState.value}")
             return Result.Error(LevelDeserializationError.IncompleteCache)
         }
 
@@ -84,7 +91,9 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
      * @see[cacheInitState]
      */
     override suspend fun initializeCache() {
-        if (cacheInitState != CacheInitializationState.Uninitialized)
+        Log.d(TAG, "Start initializing cache")
+        if (cacheInitState.value != CacheInitializationState.Uninitialized)
+            Log.e(TAG, "Cache already initialized, status: ${cacheInitState.value}")
             return
 
         _cacheInitState.value = CacheInitializationState.Loading
@@ -92,10 +101,12 @@ class LevelRepository(private val context: Context) : CachedSearchRepository<Gam
         Game.entries.forEach {
             get(LevelData(it, 0)).onError {
                 _cacheInitState.value = CacheInitializationState.Failed(it)
+                Log.e(TAG, "Cache initialization error $it")
                 return@onError
             }
         }
 
+        Log.i(TAG, "Cache is initialized")
         _cacheInitState.value = CacheInitializationState.Ready
     }
 

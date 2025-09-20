@@ -14,17 +14,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import kotlin.reflect.typeOf
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
 import org.squidfish.tuplenback.MainActivity
-import org.squidfish.tuplenback.data.game.levels.LevelData
-import org.squidfish.tuplenback.games.Game
+import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
+import org.squidfish.tuplenback.presentation.navigation.AppNavTypes
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
+import org.squidfish.tuplenback.presentation.navigation.parcelableType
 import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionScreen
 import org.squidfish.tuplenback.presentation.util.composable
 
@@ -43,23 +47,28 @@ fun TupleNBackApp(
             startDestination = ScreenDestination.MainScreen,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable<ScreenDestination.GameScreen> { backStackEntry ->
+            composable<ScreenDestination.GameScreen>(
+                typeMap = AppNavTypes.typeMap
+            ) { backStackEntry ->
+                val level = backStackEntry.toRoute<LevelData?>()
+
                 SideEffect {
                     Log.v(TAG, "Composed ${ScreenDestination.GameScreen::class}")
                 }
+
                 LaunchedEffect(Unit) {
-                    backStackEntry.level?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
+                    level?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
                 }
+
                 GameScreen(
                     modifier = Modifier,
                     onFinnish = {
                         gameModel.onEvent(AppEvent.FinishGame)
-                        // TODO:
                         //(backStackEntry.level?: gameModel.level)?.let {
                         //    navController.navigate(ScreenDestination.SummaryScreen(level = it.gameMode))
                         //}
-                        (gameModel.level)?.let {
-                            navController.navigate(ScreenDestination.SummaryScreen(level = LevelData(it.game, it.level)))
+                        level?.let {
+                            navController.navigate(ScreenDestination.SummaryScreen(level))
                         }
                     },
                     onAbort = {
@@ -69,12 +78,16 @@ fun TupleNBackApp(
                     },
                     onGuess = { module: GameModule -> gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module)) },
                     state = gameModel.gameState.collectAsState().value,
-                    game = backStackEntry.level?.gameMode ?: gameModel.level?.game ?: error("Level cannot be null"),
-                    //totalRounds = backStackEntry.level?.settings?.totalRounds ?: gameModel.level?.settings?.totalRounds ?: error("Level cannot be null"),
-                    totalRounds = gameModel.level?.settings?.totalRounds ?: error("Level cannot be null"),
+                    game = level?.gameMode ?: gameModel.level.value?.game ?: error("Level cannot be null"),
+                    totalRounds = gameModel.level.value?.settings?.totalRounds ?: error("Level cannot be null"),
                 )
             }
-            composable<ScreenDestination.SummaryScreen> { backStackEntry ->
+
+            composable<ScreenDestination.SummaryScreen>(
+                typeMap = AppNavTypes.typeMap
+            ) { backStackEntry ->
+                val level = backStackEntry.toRoute<LevelData>()
+
                 SideEffect {
                     Log.v(TAG, "Composed ${ScreenDestination.SummaryScreen::class}")
                 }
@@ -82,7 +95,7 @@ fun TupleNBackApp(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
                         navController.navigate(ScreenDestination.GameScreen(level = null)) {
-                            popUpTo(ScreenDestination.GameScreen(level = backStackEntry.level)) { inclusive = true }
+                            popUpTo(ScreenDestination.GameScreen(level = level)) { inclusive = true }
                         }
 
                         gameModel.onEvent(AppEvent.ResetGameState)
@@ -98,7 +111,9 @@ fun TupleNBackApp(
                 )
             }
 
-            composable<ScreenDestination.GameSelectionScreen> {
+            composable<ScreenDestination.GameSelectionScreen>(
+                typeMap = AppNavTypes.typeMap
+            ) {
                 SideEffect {
                     Log.v(TAG, "Composed ${ScreenDestination.MainScreen::class}")
                 }
@@ -108,13 +123,15 @@ fun TupleNBackApp(
                 )
             }
 
-            composable<ScreenDestination.MainScreen> {
+            composable<ScreenDestination.MainScreen>(
+                typeMap = AppNavTypes.typeMap
+            ) {
                 MainMenuScreen(
                     onSelectGameMode = {
                         navController.navigate(ScreenDestination.GameSelectionScreen)
                     },
                     onPlayRecent = {
-                        if (gameModel.level == null) {
+                        if (gameModel.level.value == null) {
                             Log.w(TAG, "Cannot play recent: No game played previously")
                             return@MainMenuScreen
                         }

@@ -11,7 +11,7 @@ import org.squidfish.tuplenback.data.room.AppDatabase
 class RepositoryModule {
 
     @Single
-    fun createGameRepository(db: AppDatabase, levelRepository: LevelRepository): GameRepository = GameRepository(db, levelRepository)
+    fun createGameRepository(db: AppDatabase): GameRepository = GameRepository(db)
 
     @Single
     fun createLevelRepository(context: Context): LevelRepository = LevelRepository(context)

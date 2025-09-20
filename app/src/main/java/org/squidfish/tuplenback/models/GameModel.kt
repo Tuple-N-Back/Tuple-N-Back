@@ -17,8 +17,7 @@ import org.squidfish.tuplenback.games.GameSettings
  */
 data class GameModel(
     val gameType: Game,
-    val level: Int = 3,
-    val gameSettings: GameSettings,
+    val level: Int,
     val playerStats: Map<GameModule, PlayerPerformanceStats>,
     val gameEndTime: Long,
 )
