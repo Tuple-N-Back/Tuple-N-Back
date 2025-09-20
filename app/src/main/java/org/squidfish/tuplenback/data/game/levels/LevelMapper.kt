@@ -1,7 +1,6 @@
 package org.squidfish.tuplenback.data.game.levels
 
 import org.squidfish.tuplenback.games.GameSettings
-import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.utils.Error
 import org.squidfish.tuplenback.utils.LevelDeserializationError
 import org.squidfish.tuplenback.utils.Result

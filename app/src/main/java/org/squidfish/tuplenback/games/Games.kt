@@ -1,7 +1,6 @@
 package org.squidfish.tuplenback.games
 
 import androidx.annotation.DrawableRes
-import kotlinx.serialization.Serializable
 import org.koin.core.context.GlobalContext
 import org.koin.core.parameter.parametersOf
 import org.squidfish.tuplenback.R
@@ -11,7 +10,11 @@ import org.squidfish.tuplenback.data.game.engine.VibrationEngine
 import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.games.engines.GridEngine
 
-data class Level(val level: Int, val game: Game, val settings: GameSettings)
+data class Level(
+    val level: Int,
+    val game: Game,
+    val settings: GameSettings,
+)
 
 /**
  * Each enum value is to be a separate game. A game needs list of modules and settings

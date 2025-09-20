@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.squidfish.tuplenback.data.game.asLevelData
 import org.squidfish.tuplenback.data.game.levels.LevelRepository
 import org.squidfish.tuplenback.games.Game
@@ -40,7 +38,10 @@ private const val TAG = "GameViewModel"
  *
  * @see[AppEvent]
  */
-class GameViewModel(private val gameRepository: RecentRepository<GameModel>, private val levelRepository: LevelRepository) : ViewModel() {
+class GameViewModel(
+    private val gameRepository: RecentRepository<GameModel>,
+    private val levelRepository: LevelRepository,
+) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
@@ -137,7 +138,6 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
         Log.d(TAG, "Starting game")
         viewModelScope.launch {
             val settings = when (val res = levelRepository.get(level)) {
-                //is Result.Error -> return res
                 is Result.Error -> {
                     Log.e(TAG, "level repository error: $res")
                     return@launch
@@ -149,17 +149,17 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
                 level = level.level,
                 game = level.gameMode,
                 settings = settings,
-                )
+            )
 
             gameEngines.clear()
 
             initGameEngines().onError {
-                //return Result.Error(it)
+                // return Result.Error(it)
                 Log.e(TAG, "Game engine failure: $it")
                 return@launch
-                }
+            }
             initGameState().onError {
-                //return Result.Error(it)
+                // return Result.Error(it)
                 Log.e(TAG, "Cannot initialize game state: $it")
                 return@launch
             }
@@ -167,11 +167,10 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
             Log.i(TAG, "Starting game")
             startNewRound().onError {
                 Log.e(TAG, "Cannot start round: $it")
-                //return Result.Error(it)
+                // return Result.Error(it)
                 return@launch
             }
-
-            }
+        }
         return Result.Success(Unit)
     }
 
@@ -349,5 +348,4 @@ class GameViewModel(private val gameRepository: RecentRepository<GameModel>, pri
         timerJob?.cancel()
         super.onCleared()
     }
-
 }

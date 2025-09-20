@@ -1,5 +1,6 @@
 package org.squidfish.tuplenback.views
 
+// import org.squidfish.tuplenback.presentation.navigation.parcelableType
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -15,24 +16,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.navigation.toRoute
-import kotlin.reflect.typeOf
 import kotlin.system.exitProcess
 import org.koin.androidx.compose.koinViewModel
 import org.squidfish.tuplenback.MainActivity
-import org.squidfish.tuplenback.games.Game
-import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.models.AppEvent
 import org.squidfish.tuplenback.models.GameViewModel
+import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
-//import org.squidfish.tuplenback.presentation.navigation.parcelableType
 import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionScreen
 import org.squidfish.tuplenback.presentation.util.composable
-import org.squidfish.tuplenback.utils.BadConfigurationError
-import org.squidfish.tuplenback.utils.Result
 
 private const val TAG = "TupleNBackApp"
 
@@ -51,7 +44,13 @@ fun TupleNBackApp(
         ) {
             composable<ScreenDestination.GameScreen> { backStackEntry ->
 
-                val level = if (backStackEntry.game != null) LevelData(backStackEntry.game, backStackEntry.level) else null
+                val level = if (backStackEntry.game !=
+                    null
+                ) {
+                    LevelData(backStackEntry.game, backStackEntry.level)
+                } else {
+                    null
+                }
 
                 SideEffect {
                     Log.v(TAG, "Composed ${ScreenDestination.GameScreen::class}")
@@ -85,7 +84,7 @@ fun TupleNBackApp(
                 )
             }
 
-            composable<ScreenDestination.SummaryScreen>{ backStackEntry ->
+            composable<ScreenDestination.SummaryScreen> { backStackEntry ->
                 val level = LevelData(backStackEntry.game, backStackEntry.level)
 
                 SideEffect {
@@ -111,7 +110,7 @@ fun TupleNBackApp(
                 )
             }
 
-            composable<ScreenDestination.GameSelectionScreen>{
+            composable<ScreenDestination.GameSelectionScreen> {
                 SideEffect {
                     Log.v(TAG, "Composed ${ScreenDestination.MainScreen::class}")
                 }
@@ -131,7 +130,6 @@ fun TupleNBackApp(
                             Log.w(TAG, "Cannot play recent: No game played previously")
                             return@MainMenuScreen
                         }
-
 
                         navController.navigate(ScreenDestination.GameScreen(null, -1))
                         gameModel.onEvent(AppEvent.PlayAgain)

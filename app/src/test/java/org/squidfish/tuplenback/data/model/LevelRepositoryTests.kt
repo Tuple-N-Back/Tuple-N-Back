@@ -17,7 +17,6 @@ import org.squidfish.tuplenback.utils.LevelDeserializationError
 import org.squidfish.tuplenback.utils.Result
 import org.squidfish.tuplenback.utils.data
 
-
 @RunWith(RobolectricTestRunner::class)
 class LevelRepositoryTests {
     private lateinit var levelRepositoryForValidLevels : LevelRepository
@@ -40,12 +39,14 @@ class LevelRepositoryTests {
         val settings = levelRepositoryForValidLevels.get(LevelData(Game.Grid, 0))
 
         // Then
-        assert(settings.data == GameSettings(
-            recallsBack = 2,
-            totalRounds = 3,
-            millisPerRound = 1000,
-            repeatChance = 20,
-        ))
+        assert(
+            settings.data == GameSettings(
+                recallsBack = 2,
+                totalRounds = 3,
+                millisPerRound = 1000,
+                repeatChance = 20,
+            ),
+        )
     }
 
     @Test
@@ -57,12 +58,14 @@ class LevelRepositoryTests {
         val settings = levelRepositoryForValidLevels.get(LevelData(Game.Grid, 0))
 
         // Then
-        assert(settings.data == GameSettings(
-            recallsBack = 2,
-            totalRounds = 3,
-            millisPerRound = 1000,
-            repeatChance = 20,
-        ))
+        assert(
+            settings.data == GameSettings(
+                recallsBack = 2,
+                totalRounds = 3,
+                millisPerRound = 1000,
+                repeatChance = 20,
+            ),
+        )
     }
 
     @Test
@@ -95,7 +98,6 @@ class LevelRepositoryTests {
         assert(settings == Result.Error(LevelDeserializationError.NonexistentLevel))
     }
 
-
     @Test
     fun `load settings of valid config for negative level from cache`() = runTest {
         // Given
@@ -126,17 +128,18 @@ class LevelRepositoryTests {
         val settings = levelRepositoryForValidLevels.getFromCache(LevelData(Game.Grid, 0))
 
         // Then
-        assert(settings.data == GameSettings(
-            recallsBack = 2,
-            totalRounds = 3,
-            millisPerRound = 1000,
-            repeatChance = 20,
-        ))
+        assert(
+            settings.data == GameSettings(
+                recallsBack = 2,
+                totalRounds = 3,
+                millisPerRound = 1000,
+                repeatChance = 20,
+            ),
+        )
     }
 
     @Test
     fun `get settings from non-initialized cache`() = runTest {
-
         // When
         val settings = levelRepositoryForValidLevels.getFromCache(LevelData(Game.Grid, 0))
 

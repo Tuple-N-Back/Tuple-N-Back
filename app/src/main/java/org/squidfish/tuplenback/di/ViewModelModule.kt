@@ -10,7 +10,8 @@ import org.squidfish.tuplenback.presentation.screen.gameselection.GameSelectionV
 @Module
 class ViewModelModule {
     @KoinViewModel
-    fun createGameViewModel(gameRepository: GameRepository, levelRepository: LevelRepository): GameViewModel = GameViewModel(gameRepository, levelRepository)
+    fun createGameViewModel(gameRepository: GameRepository, levelRepository: LevelRepository): GameViewModel =
+        GameViewModel(gameRepository, levelRepository)
 
     @KoinViewModel
     fun createGameSelectionViewModel(): GameSelectionViewModel = GameSelectionViewModel()

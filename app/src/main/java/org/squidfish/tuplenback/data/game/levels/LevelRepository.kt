@@ -1,7 +1,6 @@
 package org.squidfish.tuplenback.data.game.levels
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,7 +19,6 @@ import org.squidfish.tuplenback.utils.Result
 import org.squidfish.tuplenback.utils.ValidationError
 import org.squidfish.tuplenback.utils.onError
 
-
 // TODO: write tests that check if the appropriate errors are returned when an invalid config is parsed
 // Maybe validate the json files independently of the level repository instead?
 
@@ -35,10 +33,9 @@ import org.squidfish.tuplenback.utils.onError
  */
 class LevelRepository(
     private val context: Context,
-    private val configDirectory: String = "levels",  // defaults to assets/levels/
+    private val configDirectory: String = "levels", // defaults to assets/levels/
     private val autoInitCache: Boolean = false,
 ) : CachedSearchRepository<GameSettings, LevelData> {
-    private val TAG = "LevelRepository"
     private val levelCache = mutableMapOf<Game, GameLevelData>()
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -58,17 +55,19 @@ class LevelRepository(
      * of all levels being cached. The first level of a level should be passed as level 0.
      */
     override suspend fun get(key: LevelData): Result<GameSettings, Error> {
-
         if (key.level < 0) {
             return Result.Error(LevelDeserializationError.NonexistentLevel)
         }
 
         levelCache[key.gameMode]?.let {
-            return if (it.levels.size > key.level) it.levels[key.level].asGameSettings else Result.Error(
-                LevelDeserializationError.NonexistentLevel)
+            return if (it.levels.size > key.level) {
+                it.levels[key.level].asGameSettings
+            } else {
+                Result.Error(LevelDeserializationError.NonexistentLevel)
+            }
         }
 
-        val levelConfigFileName = "${configDirectory}/${key.gameMode.name}.json"
+        val levelConfigFileName = "$configDirectory/${key.gameMode.name}.json"
         val levelsJson : String
         try {
             levelsJson = context.assets.open(levelConfigFileName).bufferedReader().use {
@@ -136,7 +135,6 @@ class LevelRepository(
 
         _cacheInitState.value = CacheInitializationState.Ready
     }
-
 
     override suspend fun insert(data: GameSettings): Result<Unit, Error> {
         TODO("Not yet implemented")

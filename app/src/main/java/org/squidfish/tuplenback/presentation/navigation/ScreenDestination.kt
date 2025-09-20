@@ -1,14 +1,6 @@
 package org.squidfish.tuplenback.presentation.navigation
 
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Parcelable
-import androidx.navigation.NavType
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlin.reflect.typeOf
 import org.squidfish.tuplenback.games.Game
 
 sealed interface ScreenDestination {

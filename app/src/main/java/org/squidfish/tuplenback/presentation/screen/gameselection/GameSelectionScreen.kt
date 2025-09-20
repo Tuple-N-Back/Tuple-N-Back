@@ -45,11 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import org.squidfish.tuplenback.presentation.navigation.LevelData
-import org.squidfish.tuplenback.data.game.levels.LevelRepository
 import org.squidfish.tuplenback.games.Game
-import org.squidfish.tuplenback.games.GameSettings
-import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
 import org.squidfish.tuplenback.presentation.util.ObserveAsEvents
 

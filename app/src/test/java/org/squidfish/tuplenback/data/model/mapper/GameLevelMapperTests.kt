@@ -11,7 +11,6 @@ import org.squidfish.tuplenback.utils.data
 
 class GameLevelMapperTests {
 
-
     @Test
     fun `asGameSettings converts valid GameLevel to GameSettings correctly`() {
         // Given
@@ -22,19 +21,21 @@ class GameLevelMapperTests {
                 totalRounds = 3,
                 millisPerRound = 1000L,
                 repeatChance = 50,
-            )
+            ),
         )
 
         // When
         val result = gameLevel.asGameSettings
 
         // Then
-        assert(result.data == GameSettings(
-            recallsBack = 2,
-            totalRounds = 3,
-            millisPerRound = 1000L,
-            repeatChance = 50,
-        ))
+        assert(
+            result.data == GameSettings(
+                recallsBack = 2,
+                totalRounds = 3,
+                millisPerRound = 1000L,
+                repeatChance = 50,
+            ),
+        )
     }
 
     @Test
@@ -43,11 +44,11 @@ class GameLevelMapperTests {
         val gameLevel = GameLevel(
             levelId = 1,
             settings = GameLevelSettings(
-                recallsBack = 0,  // Must be > 0
+                recallsBack = 0, // Must be > 0
                 totalRounds = 5,
                 millisPerRound = 1000L,
                 repeatChance = 50,
-            )
+            ),
         )
 
         // When
@@ -64,10 +65,10 @@ class GameLevelMapperTests {
             levelId = 1,
             settings = GameLevelSettings(
                 recallsBack = 3,
-                totalRounds = 3,  // Must be > recallsBack
+                totalRounds = 3, // Must be > recallsBack
                 millisPerRound = 1000L,
                 repeatChance = 50,
-            )
+            ),
         )
 
         // When
@@ -87,7 +88,7 @@ class GameLevelMapperTests {
                 totalRounds = 5,
                 millisPerRound = 0L, // Must be > 0
                 repeatChance = 50,
-            )
+            ),
         )
 
         // When
@@ -106,8 +107,8 @@ class GameLevelMapperTests {
                 recallsBack = 2,
                 totalRounds = 5,
                 millisPerRound = 1000L,
-                repeatChance = -1,  // Must be >= 0 && <= 100
-            )
+                repeatChance = -1, // Must be >= 0 && <= 100
+            ),
         )
 
         // When
@@ -126,8 +127,8 @@ class GameLevelMapperTests {
                 recallsBack = 2,
                 totalRounds = 5,
                 millisPerRound = 1000L,
-                repeatChance = -1,  // Must be >= 0 && <= 100
-            )
+                repeatChance = -1, // Must be >= 0 && <= 100
+            ),
         )
 
         // When
@@ -146,19 +147,21 @@ class GameLevelMapperTests {
                 recallsBack = 1, // Minimum valid value
                 totalRounds = 2, // Minimum valid value (recallsBack + 1)
                 millisPerRound = 1L, // Minimum valid value
-                repeatChance = 0 // Minimum valid value
-            )
+                repeatChance = 0, // Minimum valid value
+            ),
         )
 
         // When
         val result = gameLevel.asGameSettings
 
         // Then
-        assert(result.data == GameSettings(
-            recallsBack = 1,
-            totalRounds = 2,
-            millisPerRound = 1L,
-            repeatChance = 0,
-        ))
+        assert(
+            result.data == GameSettings(
+                recallsBack = 1,
+                totalRounds = 2,
+                millisPerRound = 1L,
+                repeatChance = 0,
+            ),
+        )
     }
 }

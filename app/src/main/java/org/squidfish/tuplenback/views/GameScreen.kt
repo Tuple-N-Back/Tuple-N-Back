@@ -70,7 +70,7 @@ fun GameScreen(
                         .padding(top = 32.dp),
                 ) {
                     Text(
-                        text = "${state.currentRound}/${totalRounds}",
+                        text = "${state.currentRound}/$totalRounds",
                         fontSize = 32.sp,
                     )
                 }
