@@ -5,7 +5,6 @@ import org.squidfish.tuplenback.data.game.asGameStatsData
 import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.games.GameSettings
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.PlayerPerformanceStats
 import org.squidfish.tuplenback.utils.Result

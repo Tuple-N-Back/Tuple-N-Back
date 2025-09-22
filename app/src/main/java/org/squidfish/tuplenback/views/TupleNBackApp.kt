@@ -44,10 +44,8 @@ fun TupleNBackApp(
         ) {
             composable<ScreenDestination.GameScreen> { backStackEntry ->
 
-                val level = if (backStackEntry.game != null) {
-                    LevelData(backStackEntry.game, backStackEntry.level)
-                } else {
-                    null
+                val level = backStackEntry.game?.let {
+                    LevelData(it, backStackEntry.level)
                 }
 
                 SideEffect {
