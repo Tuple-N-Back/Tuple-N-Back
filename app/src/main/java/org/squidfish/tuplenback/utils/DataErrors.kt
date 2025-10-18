@@ -10,12 +10,12 @@ sealed interface ValidationError : DataError {
 }
 
 sealed interface LevelDeserializationError : ValidationError {
-    object MissingConfig : LevelDeserializationError
+    object ConfigNotFound : LevelDeserializationError
     object InvalidRecallsBack : LevelDeserializationError
     object TooFewRounds : LevelDeserializationError
     object InvalidRoundTime : LevelDeserializationError
     object InvalidRepeatChance : LevelDeserializationError
-    object LevelMismatch : LevelDeserializationError // Unordered levels json config
+    object LevelMismatch : LevelDeserializationError // Unordered levels or invalid level ids in json config
     object NonexistentLevel : LevelDeserializationError
-    object IncompleteCache : LevelDeserializationError
+    object InvalidSyntax : LevelDeserializationError
 }

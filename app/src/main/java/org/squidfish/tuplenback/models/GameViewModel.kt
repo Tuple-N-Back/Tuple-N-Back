@@ -1,6 +1,8 @@
 package org.squidfish.tuplenback.models
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -44,6 +46,9 @@ class GameViewModel(
 ) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
+
+    private val _gameLoadingState = mutableStateOf<GameLoadingState>(GameLoadingState.Loading)
+    val gameLoadingState: State<GameLoadingState> = _gameLoadingState
 
     private var timerJob: Job? = null
 
@@ -105,7 +110,6 @@ class GameViewModel(
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
-            // TODO: Use a stateflow for start game status (and thus error handling) if necessary
             startGame(event.level)
         }
         AppEvent.FinishGame -> gameEngines.values.forEach { it.onGameEnd() }
@@ -133,36 +137,43 @@ class GameViewModel(
      */
     private fun startGame(level: LevelData) {
         viewModelScope.launch {
+            _gameLoadingState.value = GameLoadingState.Loading
+
             val settings = when (val res = levelRepository.get(level)) {
                 is Result.Error -> {
-                    Log.e(TAG, "level repository error: $res")
+                    _gameLoadingState.value = GameLoadingState.Failiure(res.error)
                     return@launch
                 }
+
                 is Result.Success -> res.data
             }
 
-            _level.value = Level(
+            val level = Level(
                 level = level.level,
                 game = level.gameMode,
                 settings = settings,
             )
 
+            _level.value = level
+
             gameEngines.clear()
 
             initGameEngines().onError {
-                Log.e(TAG, "Game engine failure: $it")
+                _gameLoadingState.value = GameLoadingState.Failiure(it)
                 return@launch
             }
             initGameState().onError {
-                Log.e(TAG, "Cannot initialize game state: $it")
+                _gameLoadingState.value = GameLoadingState.Failiure(it)
                 return@launch
             }
 
             Log.i(TAG, "Starting game")
             startNewRound().onError {
-                Log.e(TAG, "Cannot start round: $it")
+                _gameLoadingState.value = GameLoadingState.Failiure(it)
                 return@launch
             }
+
+            _gameLoadingState.value = GameLoadingState.Success(level)
         }
     }
 
@@ -247,7 +258,7 @@ class GameViewModel(
     }
 
     /**
-     * Starts a new game round, that is, creates a new mnemonic and start the round timer
+     * Starts a new game round, that is, creates a new mnemonic and starts the round timer
      * coroutine.
      *
      * @see [GameEngine.createNewState]
@@ -340,4 +351,10 @@ class GameViewModel(
         timerJob?.cancel()
         super.onCleared()
     }
+}
+
+sealed interface GameLoadingState {
+    object Loading : GameLoadingState
+    data class Success(val level: Level) : GameLoadingState
+    data class Failiure(val error: Error) : GameLoadingState
 }

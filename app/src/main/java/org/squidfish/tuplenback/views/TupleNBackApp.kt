@@ -1,6 +1,5 @@
 package org.squidfish.tuplenback.views
 
-// import org.squidfish.tuplenback.presentation.navigation.parcelableType
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +20,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.squidfish.tuplenback.MainActivity
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.AppEvent
+import org.squidfish.tuplenback.models.GameLoadingState
 import org.squidfish.tuplenback.models.GameViewModel
 import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.presentation.navigation.ScreenDestination
@@ -43,7 +43,6 @@ fun TupleNBackApp(
             modifier = Modifier.padding(innerPadding),
         ) {
             composable<ScreenDestination.GameScreen> { backStackEntry ->
-
                 val level = backStackEntry.game?.let {
                     LevelData(it, backStackEntry.level)
                 }
@@ -53,31 +52,50 @@ fun TupleNBackApp(
                 }
 
                 LaunchedEffect(Unit) {
+                    // TODO: If necessary, split AppEvent.StartGame into initialization and start-round events. This
+                    //  way, initialization should happen before the composable is called and the round should start
+                    //  after (by passing onStart to the GameScreen?)
                     level?.let { gameModel.onEvent(AppEvent.StartGame(it)) }
                 }
 
-                GameScreen(
-                    modifier = Modifier,
-                    onFinnish = {
-                        gameModel.onEvent(AppEvent.FinishGame)
-                        level?.let {
-                            navController.navigate(ScreenDestination.SummaryScreen(it.gameMode, it.level))
-                            return@GameScreen
-                        }
-                        gameModel.level.value?.let {
-                            navController.navigate(ScreenDestination.SummaryScreen(it.game, it.level))
-                        }
-                    },
-                    onAbort = {
-                        gameModel.onEvent(AppEvent.AbortOngoingGame)
-                        gameModel.onEvent(AppEvent.ResetGameState)
-                        navController.navigate(ScreenDestination.MainScreen)
-                    },
-                    onGuess = { module: GameModule -> gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module)) },
-                    state = gameModel.gameState.collectAsState().value,
-                    game = level?.gameMode ?: gameModel.level.value?.game ?: error("Level cannot be null"),
-                    totalRounds = gameModel.level.value?.settings?.totalRounds ?: error("Level cannot be null"),
-                )
+                when (gameModel.gameLoadingState.value) {
+                    is GameLoadingState.Loading -> {
+                        // TODO: Loading screen
+                    }
+                    is GameLoadingState.Success -> {
+                        val levelData = gameModel.gameLoadingState.value as GameLoadingState.Success
+
+                        GameScreen(
+                            modifier = Modifier,
+                            onFinnish = {
+                                gameModel.onEvent(AppEvent.FinishGame)
+                                level?.let {
+                                    navController.navigate(ScreenDestination.SummaryScreen(it.gameMode, it.level))
+                                    return@GameScreen
+                                }
+                                gameModel.level.value?.let {
+                                    navController.navigate(ScreenDestination.SummaryScreen(it.game, it.level))
+                                }
+                            },
+                            onAbort = {
+                                gameModel.onEvent(AppEvent.AbortOngoingGame)
+                                gameModel.onEvent(AppEvent.ResetGameState)
+                                navController.navigate(ScreenDestination.MainScreen)
+                            },
+                            onGuess = { module: GameModule ->
+                                gameModel.onEvent(AppEvent.MakeMnemonicRepeatGuess(module))
+                            },
+                            state = gameModel.gameState.collectAsState().value,
+                            game = levelData.level.game,
+                            totalRounds = levelData.level.settings.totalRounds,
+                        )
+                    }
+                    is GameLoadingState.Failiure -> {
+                        val error = gameModel.gameLoadingState.value as GameLoadingState.Failiure
+                        Log.e(TAG, "Game loading error: ${error.error}")
+                        // TODO: Error display
+                    }
+                }
             }
 
             composable<ScreenDestination.SummaryScreen> { backStackEntry ->

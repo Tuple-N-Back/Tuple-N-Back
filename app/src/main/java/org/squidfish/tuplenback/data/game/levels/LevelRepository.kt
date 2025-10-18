@@ -1,6 +1,7 @@
 package org.squidfish.tuplenback.data.game.levels
 
 import android.content.Context
+import android.content.res.Resources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -11,31 +12,22 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameSettings
-import org.squidfish.tuplenback.models.CachedSearchRepository
+import org.squidfish.tuplenback.models.SearchRepository
 import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.utils.Error
 import org.squidfish.tuplenback.utils.LevelDeserializationError
 import org.squidfish.tuplenback.utils.Result
-import org.squidfish.tuplenback.utils.ValidationError
 import org.squidfish.tuplenback.utils.onError
-
-// TODO: write tests that check if the appropriate errors are returned when an invalid config is parsed
-// Maybe validate the json files independently of the level repository instead?
 
 /**
  * Get level configuration for [Game]s.
  *
  * @param[context] Application context
- * @param[configDirectory] A directory within assets where config files are looked for. Each config file should have the
- * the same name as the game whose level it describes
- * @param[autoInitCache] When true the content of all config files in [configDirectory] is automatically cached. See
- * [initializeCache] and [getFromCache]
+ * @param[autoInitCache] When true the content of all config files is automatically cached. See
+ * [initializeCache]
  */
-class LevelRepository(
-    private val context: Context,
-    private val configDirectory: String = "levels", // defaults to assets/levels/
-    private val autoInitCache: Boolean = false,
-) : CachedSearchRepository<GameSettings, LevelData> {
+class LevelRepository(private val context: Context, private val autoInitCache: Boolean = false) :
+    SearchRepository<GameSettings, LevelData> {
     private val levelCache = mutableMapOf<Game, GameLevelData>()
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -67,48 +59,30 @@ class LevelRepository(
             }
         }
 
-        val levelConfigFileName = "$configDirectory/${key.gameMode.name}.json"
-        val levelsJson : String
-        try {
-            levelsJson = context.assets.open(levelConfigFileName).bufferedReader().use {
-                it.readText()
-            }
-        } catch (_: java.io.IOException) {
-            return Result.Error(LevelDeserializationError.MissingConfig)
+        val levelsJson: String = when (val res = readLevelData(key.gameMode)) {
+            is Result.Success -> res.data
+            is Result.Error -> return res
         }
 
-        val levelData: GameLevelData = Json.decodeFromString(levelsJson)
+        val levelData: GameLevelData = runCatching {
+            Json.decodeFromString<GameLevelData>(levelsJson)
+        }.getOrElse {
+            return Result.Error(LevelDeserializationError.InvalidSyntax)
+        }
 
-        if (levelData.levels.size < key.level) {
+        if (levelData.levels.size <= key.level) {
             return Result.Error(LevelDeserializationError.NonexistentLevel)
         }
 
-        if (key.level != levelData.levels[key.level].levelId) {
-            return Result.Error(LevelDeserializationError.LevelMismatch)
+        // check that each level has the correct level id
+        for (levelId in 0..<levelData.levels.size) {
+            if (levelId != levelData.levels[levelId].levelId) {
+                return Result.Error(LevelDeserializationError.LevelMismatch)
+            }
         }
 
         levelCache.put(key.gameMode, levelData)
         return levelData.levels[key.level].asGameSettings
-    }
-
-    /**
-     * Fetch level settings from cache. [cacheInitState] must be [CacheInitializationState.Ready]
-     *
-     * @see[initializeCache]
-     * @see[cacheInitState]
-     */
-    override fun getFromCache(key: LevelData): Result<GameSettings, Error> {
-        if (cacheInitState.value != CacheInitializationState.Ready) {
-            return Result.Error(LevelDeserializationError.IncompleteCache)
-        }
-
-        val gameLevelData = levelCache[key.gameMode] ?: return Result.Error(ValidationError.MissingLevel)
-
-        if (gameLevelData.levels.size <= key.level) {
-            return Result.Error(ValidationError.MissingLevel)
-        }
-
-        return gameLevelData.levels[key.level].asGameSettings
     }
 
     /**
@@ -117,7 +91,7 @@ class LevelRepository(
      *
      * @see[cacheInitState]
      */
-    override suspend fun initializeCache() {
+    suspend fun initializeCache() {
         if (cacheInitState.value != CacheInitializationState.Uninitialized) {
             return
         }
@@ -126,7 +100,7 @@ class LevelRepository(
 
         Game.entries.forEach {
             get(LevelData(it, 0)).onError {
-                if (it != LevelDeserializationError.MissingConfig) {
+                if (it != LevelDeserializationError.ConfigNotFound) {
                     _cacheInitState.value = CacheInitializationState.Failed(it)
                     return@onError
                 }
@@ -134,6 +108,16 @@ class LevelRepository(
         }
 
         _cacheInitState.value = CacheInitializationState.Ready
+    }
+
+    fun readLevelData(game: Game): Result<String, Error> = try {
+        Result.Success(
+            context.resources.openRawResource(game.resourceId).bufferedReader().use {
+                it.readText()
+            },
+        )
+    } catch (_: Resources.NotFoundException) {
+        Result.Error(LevelDeserializationError.ConfigNotFound)
     }
 
     override suspend fun insert(data: GameSettings): Result<Unit, Error> {

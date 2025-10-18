@@ -32,14 +32,17 @@ data class Level(
  * @see[GameModule]
  * @see[GameSettings]
  */
-enum class Game(val modules: List<GameModule>) {
+enum class Game(val resourceId: Int, val modules: List<GameModule>) {
     GridPiano(
+        R.raw.grid_piano,
         listOf(GameModule.Grid, GameModule.Piano),
     ),
     Grid(
+        R.raw.grid,
         listOf(GameModule.Grid),
     ),
     GridVibration(
+        R.raw.grid_vibration,
         listOf(GameModule.Grid, GameModule.Vibration),
     ),
 }

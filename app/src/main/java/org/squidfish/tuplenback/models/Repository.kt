@@ -15,8 +15,3 @@ interface RecentRepository<T> : Repository<T> {
 interface SearchRepository<T, SearchParam> : Repository<T> {
     suspend fun get(key: SearchParam): Result<T?, Error>
 }
-
-interface CachedSearchRepository<T, SearchParam> : SearchRepository<T, SearchParam> {
-    suspend fun initializeCache()
-    fun getFromCache(key: SearchParam): Result<T?, Error>
-}

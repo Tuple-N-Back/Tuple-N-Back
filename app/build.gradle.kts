@@ -49,19 +49,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    sourceSets {
-        getByName("main") {
-            assets {
-                srcDirs("src/main/assets", "src/test/assets")
-            }
-        }
-    }
-
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
-    }
 }
 
 kotlin {
@@ -98,6 +85,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.kotlinx.coroutines)
+    testImplementation(libs.mockito.kotlin)
     testImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
