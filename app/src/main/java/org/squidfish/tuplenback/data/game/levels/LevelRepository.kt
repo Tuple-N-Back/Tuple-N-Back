@@ -28,6 +28,7 @@ import org.squidfish.tuplenback.utils.onError
  */
 class LevelRepository(private val context: Context, private val autoInitCache: Boolean = false) :
     SearchRepository<GameSettings, LevelData> {
+
     private val levelCache = mutableMapOf<Game, GameLevelData>()
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -129,9 +130,9 @@ class LevelRepository(private val context: Context, private val autoInitCache: B
     }
 }
 
-sealed class CacheInitializationState {
-    object Uninitialized : CacheInitializationState()
-    object Loading : CacheInitializationState()
-    object Ready : CacheInitializationState()
-    data class Failed(val error: Error): CacheInitializationState()
+sealed interface CacheInitializationState {
+    object Uninitialized : CacheInitializationState
+    object Loading : CacheInitializationState
+    object Ready : CacheInitializationState
+    data class Failed(val error: Error): CacheInitializationState
 }

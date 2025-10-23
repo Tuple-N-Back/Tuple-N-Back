@@ -3,6 +3,7 @@ package org.squidfish.tuplenback.data.model
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import kotlin.test.Test
+import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -25,7 +26,7 @@ class LevelRepositoryTests {
     private lateinit var spiedLevelRepository: LevelRepository
     private lateinit var context: Application
 
-    val singleGridLevelConfig = """
+    private val singleGridLevelConfig = """
         {
             "gameType": "Grid",
             "levels": [
@@ -44,7 +45,7 @@ class LevelRepositoryTests {
 
     @Before
     fun createLevelRepository() {
-        this.context = ApplicationProvider.getApplicationContext<Application>()
+        context = ApplicationProvider.getApplicationContext()
         realLevelRepository = LevelRepository(context)
         spiedLevelRepository = spy(realLevelRepository)
     }
@@ -63,14 +64,14 @@ class LevelRepositoryTests {
         val settings = spiedLevelRepository.get(LevelData(Game.Grid, 0))
 
         // Then
-        assert(
+        assertTrue {
             settings.data == GameSettings(
                 recallsBack = 2,
                 totalRounds = 3,
                 millisPerRound = 1000,
                 repeatChance = 20,
-            ),
-        )
+            )
+        }
     }
 
     @Test
@@ -83,18 +84,18 @@ class LevelRepositoryTests {
         val settings = spiedLevelRepository.get(LevelData(Game.Grid, 0))
 
         // Then
-        assert(
+        assertTrue {
             settings.data == GameSettings(
                 recallsBack = 2,
                 totalRounds = 3,
                 millisPerRound = 1000,
                 repeatChance = 20,
-            ),
-        )
+            )
+        }
     }
 
     @Test
-    fun `load nonexistent level`() = runTest {
+    fun `error when loading nonexistent level`() = runTest {
         // Given
         doReturn(Result.Success(singleGridLevelConfig)).`when`(spiedLevelRepository).readLevelData(Game.Grid)
 
@@ -128,14 +129,15 @@ class LevelRepositoryTests {
         val settings = spiedLevelRepository.get(LevelData(Game.Grid, 0))
 
         // Then
-        assert(
+
+        assertTrue {
             settings.data == GameSettings(
                 recallsBack = 2,
                 totalRounds = 3,
                 millisPerRound = 1000,
                 repeatChance = 20,
-            ),
-        )
+            )
+        }
     }
 
     @Test

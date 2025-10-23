@@ -107,7 +107,7 @@ fun TupleNBackApp(
                 GameSummaryScreen(
                     stats = gameModel.playerStats,
                     onPlayAgain = {
-                        navController.navigate(ScreenDestination.GameScreen(null, 0)) {
+                        navController.navigate(ScreenDestination.GameScreen(game = null, level = 0)) {
                             popUpTo(ScreenDestination.GameScreen(level.gameMode, level.level)) { inclusive = true }
                         }
 

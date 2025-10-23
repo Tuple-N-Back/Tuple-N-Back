@@ -7,28 +7,19 @@ import org.squidfish.tuplenback.utils.Result
 
 val GameLevel.asGameSettings: Result<GameSettings, Error>
     get() {
-        if (settings.recallsBack < 1) {
-            return Result.Error(LevelDeserializationError.InvalidRecallsBack)
-        }
+        return when {
+            settings.recallsBack < 1 -> Result.Error(LevelDeserializationError.InvalidRecallsBack)
+            settings.totalRounds <= settings.recallsBack -> Result.Error(LevelDeserializationError.TooFewRounds)
+            settings.millisPerRound <= 0 -> Result.Error(LevelDeserializationError.InvalidRoundTime)
+            settings.repeatChance !in 0..100 -> Result.Error(LevelDeserializationError.InvalidRepeatChance)
 
-        if (settings.totalRounds <= settings.recallsBack) {
-            return Result.Error(LevelDeserializationError.TooFewRounds)
+            else -> Result.Success(
+                GameSettings(
+                    recallsBack = settings.recallsBack,
+                    totalRounds = settings.totalRounds,
+                    millisPerRound = settings.millisPerRound,
+                    repeatChance = settings.repeatChance,
+                ),
+            )
         }
-
-        if (settings.millisPerRound <= 0) {
-            return Result.Error(LevelDeserializationError.InvalidRoundTime)
-        }
-
-        if (settings.repeatChance < 0 || settings.repeatChance > 100) {
-            return Result.Error(LevelDeserializationError.InvalidRepeatChance)
-        }
-
-        return Result.Success(
-            GameSettings(
-                recallsBack = settings.recallsBack,
-                totalRounds = settings.totalRounds,
-                millisPerRound = settings.millisPerRound,
-                repeatChance = settings.repeatChance,
-            ),
-        )
     }

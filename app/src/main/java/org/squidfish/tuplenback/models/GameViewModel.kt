@@ -63,26 +63,6 @@ class GameViewModel(
     val playerStats: Map<GameModule, PlayerPerformanceStats>
         get() = gameEngines.mapValues { (_, engine) -> engine.getStats() }
 
-    init {
-        viewModelScope.launch {
-            gameRepository.getRecent().onSuccess {
-                it?.let {
-                    val settings = when (val res = levelRepository.get(it.asLevelData)) {
-                        is Result.Error -> {
-                            Log.e(TAG, "Cannot initialize ViewModel. Level Repository error: $it - $res")
-                            return@launch
-                        }
-                        is Result.Success -> res.data
-                    }
-
-                    _level.value = Level(it.level, it.gameType, settings)
-                }
-            }.onError {
-                Log.e(TAG, "Cannot initialize ViewModel. Game Repository error: $it")
-            }
-        }
-    }
-
     /**
      * Receive and handle view events
      *
