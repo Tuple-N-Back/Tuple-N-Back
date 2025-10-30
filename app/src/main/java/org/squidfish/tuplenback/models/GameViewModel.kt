@@ -57,6 +57,27 @@ class GameViewModel(
     private val _level = MutableStateFlow<Level?>(null)
     val level: StateFlow<Level?> = _level.asStateFlow()
 
+    init {
+        // necessary for playing a recent game as soon as the app starts (before any other games are played)
+        viewModelScope.launch {
+            gameRepository.getRecent().onSuccess {
+                it?.let {
+                    val settings = when (val res = levelRepository.get(it.asLevelData)) {
+                        is Result.Error -> {
+                            Log.e(TAG, "Cannot initialize ViewModel. Level Repository error: $it - $res")
+                            return@launch
+                        }
+                        is Result.Success -> res.data
+                    }
+
+                    _level.value = Level(it.level, it.gameType, settings)
+                }
+            }.onError {
+                Log.e(TAG, "Cannot initialize ViewModel. Game Repository error: $it")
+            }
+        }
+    }
+
     /**
      * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
      */
