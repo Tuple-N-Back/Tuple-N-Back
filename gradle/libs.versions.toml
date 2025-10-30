@@ -18,6 +18,7 @@ koin-annotations = "2.1.0"
 robolectric = "4.15.1"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization-json = "1.6.3"
+mockito-kotlin = "6.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +50,7 @@ androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric"}
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines"}
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin"}
 
 [bundles]
 koin = [ "koin-core", "koin-android", "koin-androidx-compose" ]

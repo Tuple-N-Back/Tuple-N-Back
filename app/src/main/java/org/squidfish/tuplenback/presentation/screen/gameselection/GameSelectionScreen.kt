@@ -58,7 +58,8 @@ fun GameSelectionScreen(viewModel: GameSelectionViewModel, navController: NavCon
             is GameSelectionEvent.StartGame -> {
                 // Temporary solution until we rework Game
                 val game = Game.entries.first { it.asModel == event.game }
-                navController.navigate(ScreenDestination.GameScreen(game))
+
+                navController.navigate(ScreenDestination.GameScreen(game, event.game.currentLevel))
             }
         }
     }

@@ -4,6 +4,7 @@ import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.GameModule
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.PlayerPerformanceStats
+import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.utils.Error
 import org.squidfish.tuplenback.utils.Result
 import org.squidfish.tuplenback.utils.ValidationError
@@ -32,16 +33,11 @@ val List<GameStatsData>.asGameModel: Result<GameModel, Error>
             )
         }
 
-        val gameSettings = when (val res = LevelData(first.gameType, first.level).asGameSettings) {
-            is Result.Error -> return res
-            is Result.Success -> res.data
-        }
-
         return Result.Success(
             GameModel(
                 gameType = first.gameType,
+                level = first.level,
                 playerStats = playerStats,
-                gameSettings = gameSettings,
                 gameEndTime = first.gameEndTime,
             ),
         )
@@ -76,3 +72,6 @@ val GameModel.asGameStatsData: Result<List<GameStatsData>, Error>
 
         return Result.Success(gameStats)
     }
+
+val GameModel.asLevelData : LevelData
+    get() = LevelData(gameType, level)

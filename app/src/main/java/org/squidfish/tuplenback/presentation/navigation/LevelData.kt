@@ -1,4 +1,4 @@
-package org.squidfish.tuplenback.data.game
+package org.squidfish.tuplenback.presentation.navigation
 
 import org.squidfish.tuplenback.games.Game
 

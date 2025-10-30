@@ -1,6 +1,8 @@
 package org.squidfish.tuplenback.models
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -10,9 +12,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.squidfish.tuplenback.data.game.asLevelData
+import org.squidfish.tuplenback.data.game.levels.LevelRepository
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
+import org.squidfish.tuplenback.games.Level
 import org.squidfish.tuplenback.games.engines.GameEngine
+import org.squidfish.tuplenback.presentation.navigation.LevelData
 import org.squidfish.tuplenback.utils.BadConfigurationError
 import org.squidfish.tuplenback.utils.Error
 import org.squidfish.tuplenback.utils.Result
@@ -30,36 +36,53 @@ private const val TAG = "GameViewModel"
  * @property[_gameState] [gameState], but mutable and used internally
  * @property[timerJob] Timer, used to count when a round will end in a game.
  * @property[gameEngines] List of game engines for the current [Game].
- * @property[game] The type of [Game] that is being played.
+ * @property[level] The data for the [Game] that is being played.
  *
  * @see[AppEvent]
  */
-class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewModel() {
+class GameViewModel(
+    private val gameRepository: RecentRepository<GameModel>,
+    private val levelRepository: LevelRepository,
+) : ViewModel() {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
+
+    private val _gameLoadingState = mutableStateOf<GameLoadingState>(GameLoadingState.Loading)
+    val gameLoadingState: State<GameLoadingState> = _gameLoadingState
 
     private var timerJob: Job? = null
 
     private val gameEngines = mutableMapOf<GameModule, GameEngine>()
-    var game: Game? = null
-        private set
+
+    private val _level = MutableStateFlow<Level?>(null)
+    val level: StateFlow<Level?> = _level.asStateFlow()
+
+    init {
+        // necessary for playing a recent game as soon as the app starts (before any other games are played)
+        viewModelScope.launch {
+            gameRepository.getRecent().onSuccess {
+                it?.let {
+                    val settings = when (val res = levelRepository.get(it.asLevelData)) {
+                        is Result.Error -> {
+                            Log.e(TAG, "Cannot initialize ViewModel. Level Repository error: $it - $res")
+                            return@launch
+                        }
+                        is Result.Success -> res.data
+                    }
+
+                    _level.value = Level(it.level, it.gameType, settings)
+                }
+            }.onError {
+                Log.e(TAG, "Cannot initialize ViewModel. Game Repository error: $it")
+            }
+        }
+    }
 
     /**
      * Get the [PlayerPerformanceStats] from all [GameEngine]s in use
      */
     val playerStats: Map<GameModule, PlayerPerformanceStats>
         get() = gameEngines.mapValues { (_, engine) -> engine.getStats() }
-
-    init {
-        viewModelScope.launch {
-
-            repository.getRecent().onSuccess {
-                it?.gameType?.let { prevGame -> game = prevGame }
-            }.onError {
-                Log.e(TAG, "Cannot initialize ViewModel. Repository error: $it")
-            }
-        }
-    }
 
     /**
      * Receive and handle view events
@@ -88,9 +111,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         }
         is AppEvent.StartGame -> {
             Log.i(TAG, "Starting game: $event.game")
-            startGame(event.game).onError {
-                Log.e(TAG, it.toString())
-            }
+            startGame(event.level)
         }
         AppEvent.FinishGame -> gameEngines.values.forEach { it.onGameEnd() }
     }
@@ -100,12 +121,12 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
      */
     private fun playAgain() {
         viewModelScope.launch {
-            repository.getRecent().onSuccess {
+            gameRepository.getRecent().onSuccess {
                 if (it == null) {
                     return@launch
                 }
 
-                startGame(it.gameType)
+                startGame(it.asLevelData)
             }.onError {
                 Log.e(TAG, "Cannot play again. Repository error: $it")
             }
@@ -115,18 +136,46 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     /**
      * Starts a new game. Also handles all necessary initialization
      */
-    private fun startGame(game: Game): Result<Unit, Error> {
-        this.game = game
+    private fun startGame(level: LevelData) {
+        viewModelScope.launch {
+            _gameLoadingState.value = GameLoadingState.Loading
 
-        gameEngines.clear()
+            val settings = when (val res = levelRepository.get(level)) {
+                is Result.Error -> {
+                    _gameLoadingState.value = GameLoadingState.Failiure(res.error)
+                    return@launch
+                }
 
-        initGameEngines().onError { return Result.Error(it) }
-        initGameState().onError { return Result.Error(it) }
+                is Result.Success -> res.data
+            }
 
-        Log.i(TAG, "Starting game")
-        startNewRound().onError { return Result.Error(it) }
+            val level = Level(
+                level = level.level,
+                game = level.gameMode,
+                settings = settings,
+            )
 
-        return Result.Success(Unit)
+            _level.value = level
+
+            gameEngines.clear()
+
+            initGameEngines().onError {
+                _gameLoadingState.value = GameLoadingState.Failiure(it)
+                return@launch
+            }
+            initGameState().onError {
+                _gameLoadingState.value = GameLoadingState.Failiure(it)
+                return@launch
+            }
+
+            Log.i(TAG, "Starting game")
+            startNewRound().onError {
+                _gameLoadingState.value = GameLoadingState.Failiure(it)
+                return@launch
+            }
+
+            _gameLoadingState.value = GameLoadingState.Success(level)
+        }
     }
 
     /**
@@ -148,14 +197,14 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private fun initGameEngines(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game engines")
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level.value ?: return Result.Error(BadConfigurationError.UnsetGame)
 
-        if (game.modules.isEmpty()) {
+        if (level.game.modules.isEmpty()) {
             return Result.Error(BadConfigurationError.MissingGameModules)
         }
 
-        game.modules.forEach {
-            gameEngines[it] = it.toGameEngine(game.settings)
+        level.game.modules.forEach {
+            gameEngines[it] = it.toGameEngine(level.settings)
         }
 
         return Result.Success(Unit)
@@ -167,9 +216,9 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     private fun initGameState(): Result<Unit, Error> {
         Log.i(TAG, "Initializing game state")
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level.value ?: return Result.Error(BadConfigurationError.UnsetGame)
 
-        game.modules.forEach { module ->
+        level.game.modules.forEach { module ->
             _gameState.update {
                 it.apply {
                     it.mnemonicIds[module] = 0
@@ -210,7 +259,7 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
     }
 
     /**
-     * Starts a new game round, that is, creates a new mnemonic and start the round timer
+     * Starts a new game round, that is, creates a new mnemonic and starts the round timer
      * coroutine.
      *
      * @see [GameEngine.createNewState]
@@ -226,16 +275,16 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         }
         _gameState.update { it.copy(currentRound = it.currentRound + 1, mnemonicIds = mnemonicIds) }
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level.value ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         Log.d(TAG, "Creating timer coroutine")
         timerJob = viewModelScope.launch {
-            for (time in 0..game.settings.millisPerRound step game.settings.timerUpdateInterval) {
+            for (time in 0..level.settings.millisPerRound step level.settings.timerUpdateInterval) {
                 _gameState.update {
-                    it.copy(roundProgress = time.toFloat() / game.settings.millisPerRound)
+                    it.copy(roundProgress = time.toFloat() / level.settings.millisPerRound)
                 }
 
-                delay(game.settings.timerUpdateInterval)
+                delay(level.settings.timerUpdateInterval)
             }
 
             endRound()
@@ -263,20 +312,20 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
             }
         }
 
-        val game = game ?: return Result.Error(BadConfigurationError.UnsetGame)
+        val level = level.value ?: return Result.Error(BadConfigurationError.UnsetGame)
 
         // end round or end game and get stats
-        if (_gameState.value.currentRound >= game.settings.totalRounds) {
+        if (_gameState.value.currentRound >= level.settings.totalRounds) {
             _gameState.update {
                 it.copy(gameOver = true)
             }
 
             // save stats
             viewModelScope.launch {
-                repository.insert(
+                gameRepository.insert(
                     GameModel(
-                        gameType = game,
-                        gameSettings = game.settings,
+                        gameType = level.game,
+                        level = level.level,
                         playerStats = playerStats,
                         gameEndTime = System.currentTimeMillis(),
                     ),
@@ -303,4 +352,10 @@ class GameViewModel(private val repository: RecentRepository<GameModel>) : ViewM
         timerJob?.cancel()
         super.onCleared()
     }
+}
+
+sealed interface GameLoadingState {
+    object Loading : GameLoadingState
+    data class Success(val level: Level) : GameLoadingState
+    data class Failiure(val error: Error) : GameLoadingState
 }
