@@ -8,12 +8,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 import org.robolectric.RobolectricTestRunner
 import org.squidfish.tuplenback.data.game.GameRepository
 import org.squidfish.tuplenback.data.room.AppDatabase
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.games.GameSettings
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.PlayerPerformanceStats
 import org.squidfish.tuplenback.utils.data
@@ -38,6 +38,7 @@ class LocalStorageRepositoryTests {
         if (::db.isInitialized) {
             db.close()
         }
+        stopKoin()
     }
 
     @Test
@@ -46,13 +47,6 @@ class LocalStorageRepositoryTests {
         val gameModel = GameModel(
             gameType = Game.Grid,
             level = 3,
-            gameSettings = GameSettings(
-                recallsBack = 3,
-                totalRounds = 3,
-                millisPerRound = 1000,
-                repeatChance = 50,
-                timerUpdateInterval = 30,
-            ),
             playerStats = mapOf(
                 GameModule.Grid to PlayerPerformanceStats(
                     correctRecalls = 1,
@@ -78,13 +72,6 @@ class LocalStorageRepositoryTests {
             val gameModelFirst = GameModel(
                 gameType = Game.Grid,
                 level = 3,
-                gameSettings = GameSettings(
-                    recallsBack = 3,
-                    totalRounds = 3,
-                    millisPerRound = 1000,
-                    repeatChance = 50,
-                    timerUpdateInterval = 30,
-                ),
                 playerStats = mapOf(
                     GameModule.Grid to PlayerPerformanceStats(
                         correctRecalls = 1,
@@ -99,13 +86,6 @@ class LocalStorageRepositoryTests {
             val gameModelMiddle = GameModel(
                 gameType = Game.Grid,
                 level = 3,
-                gameSettings = GameSettings(
-                    recallsBack = 3,
-                    totalRounds = 3,
-                    millisPerRound = 1000,
-                    repeatChance = 50,
-                    timerUpdateInterval = 30,
-                ),
                 playerStats = mapOf(
                     GameModule.Grid to PlayerPerformanceStats(
                         correctRecalls = 1,
@@ -120,13 +100,6 @@ class LocalStorageRepositoryTests {
             val gameModelLatest = GameModel(
                 gameType = Game.Grid,
                 level = 3,
-                gameSettings = GameSettings(
-                    recallsBack = 3,
-                    totalRounds = 3,
-                    millisPerRound = 1000,
-                    repeatChance = 50,
-                    timerUpdateInterval = 30,
-                ),
                 playerStats = mapOf(
                     GameModule.Grid to PlayerPerformanceStats(
                         correctRecalls = 4,
@@ -158,13 +131,6 @@ class LocalStorageRepositoryTests {
         val gameModel = GameModel(
             gameType = Game.Grid,
             level = 3,
-            gameSettings = GameSettings(
-                recallsBack = 3,
-                totalRounds = 3,
-                millisPerRound = 1000,
-                repeatChance = 50,
-                timerUpdateInterval = 30,
-            ),
             playerStats = mapOf(
                 GameModule.Grid to PlayerPerformanceStats(
                     correctRecalls = 1,

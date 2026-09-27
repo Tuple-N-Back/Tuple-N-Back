@@ -11,6 +11,18 @@ import org.squidfish.tuplenback.games.engines.GameEngine
 import org.squidfish.tuplenback.games.engines.GridEngine
 
 /**
+ * Contains all the necessary game data
+ *
+ * @see[Game]
+ * @see[GameSettings]
+ */
+data class Level(
+    val level: Int,
+    val game: Game,
+    val settings: GameSettings,
+)
+
+/**
  * Each enum value is to be a separate game. A game needs list of modules and settings
  *
  * Note that the repeat chance is passed to all modules, that means, for a game with 2 modules and
@@ -20,18 +32,18 @@ import org.squidfish.tuplenback.games.engines.GridEngine
  * @see[GameModule]
  * @see[GameSettings]
  */
-enum class Game(val modules: List<GameModule>, val settings: GameSettings) {
+enum class Game(val resourceId: Int, val modules: List<GameModule>) {
     GridPiano(
+        R.raw.grid_piano,
         listOf(GameModule.Grid, GameModule.Piano),
-        GameSettings(recallsBack = 2, totalRounds = 3, millisPerRound = 1500, repeatChance = 15),
     ),
     Grid(
+        R.raw.grid,
         listOf(GameModule.Grid),
-        GameSettings(recallsBack = 2, totalRounds = 3, millisPerRound = 1500, repeatChance = 20),
     ),
     GridVibration(
+        R.raw.grid_vibration,
         listOf(GameModule.Grid, GameModule.Vibration),
-        GameSettings(recallsBack = 2, totalRounds = 3, millisPerRound = 1500, repeatChance = 15),
     ),
 }
 

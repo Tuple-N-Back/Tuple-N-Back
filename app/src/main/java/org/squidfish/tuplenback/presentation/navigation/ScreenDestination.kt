@@ -12,8 +12,8 @@ sealed interface ScreenDestination {
 
     // FIXME: game is temporarily nullable until passing data between screens is reworked
     @Serializable
-    data class GameScreen(val game: Game?): ScreenDestination
+    data class GameScreen(val game: Game?, val level: Int): ScreenDestination
 
     @Serializable
-    data class SummaryScreen(val game: Game): ScreenDestination
+    data class SummaryScreen(val game: Game, val level: Int): ScreenDestination
 }

@@ -1,5 +1,7 @@
 package org.squidfish.tuplenback.games
 
+import kotlinx.serialization.Serializable
+
 /**
  * Data class containing game module settings
  *
@@ -11,6 +13,7 @@ package org.squidfish.tuplenback.games
  * that a repeat has happened. Repeats can only happen after [recallsBack] rounds have passed.
  * @param[timerUpdateInterval] How often the round timer bar is updated.
  */
+@Serializable
 data class GameSettings(
     // TODO: totalRounds > recallsBack
     val recallsBack: Int,

@@ -5,7 +5,6 @@ import org.squidfish.tuplenback.data.game.asGameModel
 import org.squidfish.tuplenback.data.room.GameStatsData
 import org.squidfish.tuplenback.games.Game
 import org.squidfish.tuplenback.games.GameModule
-import org.squidfish.tuplenback.games.GameSettings
 import org.squidfish.tuplenback.models.GameModel
 import org.squidfish.tuplenback.models.PlayerPerformanceStats
 import org.squidfish.tuplenback.utils.Result
@@ -49,13 +48,6 @@ class GameStatsMapperTests {
                 gameEndTime = 1,
                 gameType = Game.GridPiano,
                 level = 3,
-                gameSettings = GameSettings(
-                    recallsBack = 3,
-                    totalRounds = 3,
-                    millisPerRound = 1000,
-                    repeatChance = 50,
-                    timerUpdateInterval = 30,
-                ),
                 playerStats = mapOf(
                     GameModule.Grid to PlayerPerformanceStats(
                         correctRecalls = 1,

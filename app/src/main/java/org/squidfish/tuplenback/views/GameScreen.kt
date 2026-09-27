@@ -36,6 +36,7 @@ fun GameScreen(
     onGuess: (GameModule) -> Unit,
     state: GameState,
     game: Game,
+    totalRounds: Int,
     modifier: Modifier = Modifier,
 ) {
     if (state.gameOver) {
@@ -69,7 +70,7 @@ fun GameScreen(
                         .padding(top = 32.dp),
                 ) {
                     Text(
-                        text = "${state.currentRound}/${game.settings.totalRounds}",
+                        text = "${state.currentRound}/$totalRounds",
                         fontSize = 32.sp,
                     )
                 }
@@ -107,6 +108,7 @@ fun GameScreenPreview() {
         onGuess = {},
         state = GameState(),
         game = Game.GridPiano,
+        totalRounds = 10,
     )
 }
 

@@ -41,6 +41,9 @@ exceptions:
 naming:
   FunctionMaxLength:
     active: true
+    excludes: &testFolders
+      - '**/test/**'
+      - '**/androidTest/**'
   FunctionMinLength:
     active: true
   FunctionNaming:
@@ -74,6 +77,7 @@ potential-bugs:
     active: true
   LateinitUsage:
     active: true
+    excludes: *testFolders
   MissingPackageDeclaration:
     active: true
   NullCheckOnMutableProperty:

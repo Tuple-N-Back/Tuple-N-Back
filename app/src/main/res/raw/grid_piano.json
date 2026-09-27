@@ -1,0 +1,41 @@
+{
+  "gameType": "GridPiano",
+  "levels": [
+    {
+      "levelId": 0,
+      "settings": {
+        "recallsBack": 2,
+        "totalRounds": 3,
+        "millisPerRound": 1000,
+        "repeatChance": 20
+      }
+    },
+    {
+      "levelId": 1,
+      "settings": {
+        "recallsBack": 3,
+        "totalRounds": 4,
+        "millisPerRound": 1000,
+        "repeatChance": 20
+      }
+    },
+    {
+      "levelId": 2,
+      "settings": {
+        "recallsBack": 4,
+        "totalRounds": 5,
+        "millisPerRound": 1000,
+        "repeatChance": 20
+      }
+    },
+    {
+      "levelId": 3,
+      "settings": {
+        "recallsBack": 5,
+        "totalRounds": 6,
+        "millisPerRound": 1000,
+        "repeatChance": 20
+      }
+    }
+  ]
+}
